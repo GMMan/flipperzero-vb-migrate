@@ -32,8 +32,8 @@ bool vb_migrate_scene_save_success_on_event(void* context, SceneManagerEvent eve
 
     if(event.type == SceneManagerEventTypeCustom) {
         if(event.event == SaveSuccessEventPopup) {
-            consumed = scene_manager_search_and_switch_to_previous_scene(
-                inst->scene_manager, VbMigrateSceneMainMenu);
+            scene_manager_next_scene(inst->scene_manager, VbMigrateSceneInfo);
+            consumed = true;
         }
     }
     return consumed;

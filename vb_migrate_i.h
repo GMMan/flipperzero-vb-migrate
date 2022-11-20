@@ -9,6 +9,8 @@
 #include <gui/modules/widget.h>
 #include <gui/modules/text_input.h>
 // #include <gui/modules/dialog_ex.h>
+#include "gui/modules/file_select.h"
+#include <gui/modules/loading.h>
 
 #include <notification/notification.h>
 #include <dialogs/dialogs.h>
@@ -33,7 +35,9 @@ struct VbMigrate {
     Popup* popup;
     Widget* widget;
     // DialogEx* dialog_ex;
+    FileSelect* file_select;
     TextInput* text_input;
+    Loading* loading;
     NfcWorker* worker;
     NfcDevice* nfc_dev;
     char text_store[128];
@@ -47,6 +51,8 @@ typedef enum {
     VbMigrateViewWidget,
     VbMigrateViewTextInput,
     // VbMigrateViewDialogEx,
+    VbMigrateViewFileSelect,
+    VbMigrateViewLoading,
 } VbMigrateView;
 
 void vb_migrate_blink_read(VbMigrate* inst);
@@ -56,3 +62,6 @@ void vb_migrate_text_store_set(VbMigrate* inst, const char* text, ...);
 void vb_migrate_text_store_clear(VbMigrate* inst);
 bool vb_migrate_save_nfc(VbMigrate* inst, const char* dev_name, const char* file_name);
 bool vb_migrate_load_nfc(VbMigrate* inst, const char* dev_name, const char* file_name);
+FuriString* vb_migrate_get_last_path_component(const char* path);
+int vb_migrate_count_captured_mons(VbMigrate* inst, const char* dev_name);
+bool vb_migrate_delete(VbMigrate* inst, const char* dev_name, bool whole_vb);

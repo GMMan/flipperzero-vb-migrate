@@ -25,7 +25,7 @@ BantBlock* vb_tag_get_bant_block(NfcDeviceData* dev) {
 }
 
 const VbTagProduct* vb_tag_find_product(const BantBlock* bant) {
-    for(size_t i = 0; i < sizeof(vb_tag_valid_products) / sizeof(vb_tag_valid_products[0]); ++i) {
+    for(size_t i = 0; i < COUNT_OF(vb_tag_valid_products); ++i) {
         const VbTagProduct* product = &vb_tag_valid_products[i];
         if(bant->item_id == product->item_id && bant->item_no == product->item_no) return product;
     }

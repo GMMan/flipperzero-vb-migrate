@@ -62,15 +62,85 @@ bool vb_migrate_save_nfc(VbMigrate* inst, const char* dev_name, const char* file
 
 bool vb_migrate_load_nfc(VbMigrate* inst, const char* dev_name, const char* file_name) {
     bool saved = false;
-    FuriString* temp_str = furi_string_alloc();
-
-    do {
-        furi_string_printf(temp_str, "%s/%s/%s", VB_MIGRATE_FOLDER, dev_name, file_name);
-        saved = nfc_device_load(inst->nfc_dev, furi_string_get_cstr(temp_str), false);
-    } while(false);
+    FuriString* temp_str =
+        furi_string_alloc_printf("%s/%s/%s", VB_MIGRATE_FOLDER, dev_name, file_name);
+    saved = nfc_device_load(inst->nfc_dev, furi_string_get_cstr(temp_str), true);
 
     furi_string_free(temp_str);
     return saved;
+}
+
+bool vb_migrate_delete(VbMigrate* inst, const char* dev_name, bool whole_vb) {
+    bool deleted = false;
+    FuriString* dir_path = furi_string_alloc_printf("%s/%s", VB_MIGRATE_FOLDER, dev_name);
+
+    if(whole_vb) {
+        deleted = storage_simply_remove_recursive(inst->storage, furi_string_get_cstr(dir_path));
+    } else {
+        File* dir_handle = storage_file_alloc(inst->storage);
+        if(storage_dir_open(dir_handle, furi_string_get_cstr(dir_path))) {
+            FileInfo file_info;
+            char name[256];
+            FuriString* file_path = furi_string_alloc();
+            while(storage_dir_read(dir_handle, &file_info, name, sizeof(name))) {
+                // Files that is .nfc, but is not template
+                if(!(file_info.flags & FSF_DIRECTORY) && strstr(name, NFC_APP_EXTENSION) &&
+                   !strstr(name, VB_MIGRATE_TEMPLATE_NAME)) {
+                    furi_string_printf(file_path, "%s/%s", furi_string_get_cstr(dir_path), name);
+                    deleted =
+                        storage_simply_remove(inst->storage, furi_string_get_cstr(file_path));
+                    if(!deleted) break;
+                }
+            }
+
+            furi_string_free(file_path);
+            storage_dir_close(dir_handle);
+        }
+        storage_file_free(dir_handle);
+    }
+
+    furi_string_free(dir_path);
+    return deleted;
+}
+
+int vb_migrate_count_captured_mons(VbMigrate* inst, const char* dev_name) {
+    int count = 0;
+
+    FuriString* dir_path = furi_string_alloc_printf("%s/%s", VB_MIGRATE_FOLDER, dev_name);
+    File* dir_handle = storage_file_alloc(inst->storage);
+    if(storage_dir_open(dir_handle, furi_string_get_cstr(dir_path))) {
+        FileInfo file_info;
+        char name[256];
+        while(storage_dir_read(dir_handle, &file_info, name, sizeof(name))) {
+            // Files that is .nfc, but is not template
+            if(!(file_info.flags & FSF_DIRECTORY) && strstr(name, NFC_APP_EXTENSION) &&
+               !strstr(name, VB_MIGRATE_TEMPLATE_NAME))
+                ++count;
+        }
+
+        storage_dir_close(dir_handle);
+    }
+    storage_file_free(dir_handle);
+    furi_string_free(dir_path);
+
+    return count;
+}
+
+FuriString* vb_migrate_get_last_path_component(const char* path) {
+    FuriString* str = furi_string_alloc();
+
+    size_t path_len = strlen(path);
+    if(path_len > 0) {
+        int right_index = path_len - 1;
+        if(path[path_len - 1] == '/') --right_index;
+
+        while(right_index > 0 && path[right_index] != '/') --right_index;
+
+        furi_string_set_str(str, &path[right_index + 1]);
+        furi_string_trim(str, "/");
+    }
+
+    return str;
 }
 
 VbMigrate* vb_migrate_alloc() {
@@ -116,10 +186,20 @@ VbMigrate* vb_migrate_alloc() {
     view_dispatcher_add_view(
         inst->view_dispatcher, VbMigrateViewWidget, widget_get_view(inst->widget));
 
+    // File select
+    inst->file_select = file_select_alloc();
+    view_dispatcher_add_view(
+        inst->view_dispatcher, VbMigrateViewFileSelect, file_select_get_view(inst->file_select));
+
     // Text input
     inst->text_input = text_input_alloc();
     view_dispatcher_add_view(
         inst->view_dispatcher, VbMigrateViewTextInput, text_input_get_view(inst->text_input));
+
+    // Loading
+    inst->loading = loading_alloc();
+    view_dispatcher_add_view(
+        inst->view_dispatcher, VbMigrateViewLoading, loading_get_view(inst->loading));
 
     // Dialog ex
     // inst->dialog_ex = dialog_ex_alloc();
@@ -134,9 +214,17 @@ void vb_migrate_free(VbMigrate* inst) {
     // view_dispatcher_remove_view(inst->view_dispatcher, VbMigrateViewDialogEx);
     // dialog_ex_free(inst->dialog_ex);
 
+    // Loading
+    view_dispatcher_remove_view(inst->view_dispatcher, VbMigrateViewLoading);
+    loading_free(inst->loading);
+
     // Text input
     view_dispatcher_remove_view(inst->view_dispatcher, VbMigrateViewTextInput);
     text_input_free(inst->text_input);
+
+    // File select
+    view_dispatcher_remove_view(inst->view_dispatcher, VbMigrateViewFileSelect);
+    file_select_free(inst->file_select);
 
     // Widget
     view_dispatcher_remove_view(inst->view_dispatcher, VbMigrateViewWidget);
