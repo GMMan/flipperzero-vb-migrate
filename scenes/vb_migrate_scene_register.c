@@ -13,7 +13,6 @@ typedef enum {
     RegisterStateCaptureFull,
     RegisterStateCaptureFailed,
     RegisterStateCaptureIncorrectTag,
-    RegisterStateSave,
 } RegisterState;
 
 typedef enum {
@@ -95,8 +94,6 @@ static void vb_migrate_scene_register_cleanup_state(VbMigrate* inst, RegisterSta
         state == RegisterStateCaptureFull) {
         vb_migrate_blink_stop(inst);
         nfc_worker_stop(inst->worker);
-    } else if(state == RegisterStateSave) {
-        notification_message(inst->notifications, &sequence_reset_green);
     }
 }
 
@@ -294,19 +291,6 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
 
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
             notification_message(inst->notifications, &sequence_set_red_255);
-        } else if(state == RegisterStateSave) {
-            widget_reset(inst->widget);
-            widget_add_string_multiline_element(
-                inst->widget, 0, 0, AlignLeft, AlignTop, FontSecondary, "OK I guess that worked");
-            widget_add_button_element(
-                inst->widget,
-                GuiButtonTypeRight,
-                "Next",
-                vb_migrate_scene_register_widget_callback,
-                inst);
-
-            view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
-            notification_message(inst->notifications, &sequence_set_green_255);
         } else {
             furi_crash("Unknown new state in vb_migrate_scene_register_set_state");
         }
@@ -322,8 +306,6 @@ static bool vb_migrate_scene_register_next_state(VbMigrate* inst, RegisterState 
     } else if(state == RegisterStateInstructionConnect) {
         vb_migrate_scene_register_set_state(inst, RegisterStateCaptureInitial);
         return true;
-    } else if(state == RegisterStateSave) {
-        return scene_manager_previous_scene(inst->scene_manager);
     }
 
     return false;
@@ -394,19 +376,20 @@ bool vb_migrate_scene_register_on_event(void* context, SceneManagerEvent event) 
             vb_migrate_scene_register_set_state(inst, RegisterStateCaptureFull);
             consumed = true;
         } else if(event.event == RegisterEventTypeVbReadFullSuccess) {
-            if(memcmp(
-                   inst->nfc_dev->dev_data.nfc_data.uid,
-                   inst->captured_uid,
-                   sizeof(inst->captured_uid))) {
+            NfcDeviceData* dev_data = &inst->nfc_dev->dev_data;
+            if(memcmp(dev_data->nfc_data.uid, inst->captured_uid, sizeof(inst->captured_uid)) ||
+               dev_data->mf_ul_data.data_read != dev_data->mf_ul_data.data_size) {
                 notification_message(inst->notifications, &sequence_error);
                 vb_migrate_scene_register_set_state(inst, RegisterStateCaptureIncorrectTag);
             } else {
                 notification_message(inst->notifications, &sequence_success);
-                vb_migrate_scene_register_set_state(inst, RegisterStateSave);
+                scene_manager_next_scene(inst->scene_manager, VbMigrateSceneRegisterSave);
             }
+            consumed = true;
         } else if(event.event == RegisterEventTypeVbReadFullFail) {
             notification_message(inst->notifications, &sequence_error);
             vb_migrate_scene_register_set_state(inst, RegisterStateCaptureFailed);
+            consumed = true;
         } else {
             furi_crash("Unknown event in vb_migrate_scene_register_on_event");
         }

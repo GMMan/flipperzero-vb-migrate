@@ -22,6 +22,7 @@ typedef struct {
     uint16_t item_id;
     uint16_t item_no;
     const char* name;
+    const char* short_name;
 } VbTagProduct;
 
 typedef enum {
@@ -40,9 +41,9 @@ typedef enum {
 } VbTagOperation;
 
 BantBlock* vb_tag_get_bant_block(NfcDeviceData* dev);
-const VbTagProduct* vb_tag_find_product(BantBlock* bant);
+const VbTagProduct* vb_tag_find_product(const BantBlock* bant);
 bool vb_tag_validate_product(NfcDeviceData* dev);
-VbTagStatus vb_tag_get_status(BantBlock* bant);
+VbTagStatus vb_tag_get_status(const BantBlock* bant);
 void vb_tag_set_status(BantBlock* bant, VbTagStatus status);
-VbTagOperation vb_tag_get_operation(BantBlock* bant);
+VbTagOperation vb_tag_get_operation(const BantBlock* bant);
 void vb_tag_set_operation(BantBlock* bant, VbTagOperation operation);

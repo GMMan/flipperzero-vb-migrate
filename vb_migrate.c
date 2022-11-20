@@ -2,6 +2,8 @@
 
 #include "vb_migrate_i.h"
 
+#define TAG "vb_migrate"
+
 bool vb_migrate_custom_event_callback(void* context, uint32_t event) {
     furi_assert(context);
     VbMigrate* inst = context;
@@ -26,6 +28,51 @@ void vb_migrate_blink_stop(VbMigrate* inst) {
     notification_message_block(inst->notifications, &sequence_blink_stop);
 }
 
+void vb_migrate_text_store_set(VbMigrate* inst, const char* text, ...) {
+    va_list args;
+    va_start(args, text);
+
+    vsnprintf(inst->text_store, sizeof(inst->text_store), text, args);
+
+    va_end(args);
+}
+
+void vb_migrate_text_store_clear(VbMigrate* inst) {
+    memset(inst->text_store, 0, sizeof(inst->text_store));
+}
+
+bool vb_migrate_save_nfc(VbMigrate* inst, const char* dev_name, const char* file_name) {
+    bool saved = false;
+    FuriString* temp_str = furi_string_alloc();
+
+    do {
+        furi_string_printf(temp_str, "%s/%s", VB_MIGRATE_FOLDER, dev_name);
+        if(!storage_simply_mkdir(inst->storage, furi_string_get_cstr(temp_str))) {
+            dialog_message_show_storage_error(inst->dialogs, "Can not create\ndata folder");
+            break;
+        }
+        furi_string_cat_printf(temp_str, "/%s", file_name);
+        inst->nfc_dev->format = NfcDeviceSaveFormatMifareUl;
+        saved = nfc_device_save(inst->nfc_dev, furi_string_get_cstr(temp_str));
+    } while(false);
+
+    furi_string_free(temp_str);
+    return saved;
+}
+
+bool vb_migrate_load_nfc(VbMigrate* inst, const char* dev_name, const char* file_name) {
+    bool saved = false;
+    FuriString* temp_str = furi_string_alloc();
+
+    do {
+        furi_string_printf(temp_str, "%s/%s/%s", VB_MIGRATE_FOLDER, dev_name, file_name);
+        saved = nfc_device_load(inst->nfc_dev, furi_string_get_cstr(temp_str), false);
+    } while(false);
+
+    furi_string_free(temp_str);
+    return saved;
+}
+
 VbMigrate* vb_migrate_alloc() {
     VbMigrate* inst = malloc(sizeof(VbMigrate));
 
@@ -41,12 +88,18 @@ VbMigrate* vb_migrate_alloc() {
     // GUI
     inst->gui = furi_record_open(RECORD_GUI);
 
+    // Storage
+    inst->storage = furi_record_open(RECORD_STORAGE);
+
     // Notifications service
     inst->notifications = furi_record_open(RECORD_NOTIFICATION);
 
+    // Dialogs
+    inst->dialogs = furi_record_open(RECORD_DIALOGS);
+
     // NFC
-    inst->worker = nfc_worker_alloc();
     inst->nfc_dev = nfc_device_alloc();
+    inst->worker = nfc_worker_alloc();
 
     // Submenu
     inst->submenu = submenu_alloc();
@@ -63,10 +116,28 @@ VbMigrate* vb_migrate_alloc() {
     view_dispatcher_add_view(
         inst->view_dispatcher, VbMigrateViewWidget, widget_get_view(inst->widget));
 
+    // Text input
+    inst->text_input = text_input_alloc();
+    view_dispatcher_add_view(
+        inst->view_dispatcher, VbMigrateViewTextInput, text_input_get_view(inst->text_input));
+
+    // Dialog ex
+    // inst->dialog_ex = dialog_ex_alloc();
+    // view_dispatcher_add_view(
+    //     inst->view_dispatcher, VbMigrateViewDialogEx, dialog_ex_get_view(inst->dialog_ex));
+
     return inst;
 }
 
 void vb_migrate_free(VbMigrate* inst) {
+    // Dialog ex
+    // view_dispatcher_remove_view(inst->view_dispatcher, VbMigrateViewDialogEx);
+    // dialog_ex_free(inst->dialog_ex);
+
+    // Text input
+    view_dispatcher_remove_view(inst->view_dispatcher, VbMigrateViewTextInput);
+    text_input_free(inst->text_input);
+
     // Widget
     view_dispatcher_remove_view(inst->view_dispatcher, VbMigrateViewWidget);
     widget_free(inst->widget);
@@ -80,10 +151,12 @@ void vb_migrate_free(VbMigrate* inst) {
     submenu_free(inst->submenu);
 
     // NFC
-    nfc_device_free(inst->nfc_dev);
     nfc_worker_free(inst->worker);
+    nfc_device_free(inst->nfc_dev);
 
+    furi_record_close(RECORD_DIALOGS);
     furi_record_close(RECORD_NOTIFICATION);
+    furi_record_close(RECORD_STORAGE);
     furi_record_close(RECORD_GUI);
 
     view_dispatcher_free(inst->view_dispatcher);
@@ -97,9 +170,13 @@ int32_t vb_migrate_app(void* p) {
 
     VbMigrate* inst = vb_migrate_alloc();
     view_dispatcher_attach_to_gui(inst->view_dispatcher, inst->gui, ViewDispatcherTypeFullscreen);
-    scene_manager_next_scene(inst->scene_manager, VbMigrateSceneMainMenu);
 
-    view_dispatcher_run(inst->view_dispatcher);
+    if(storage_simply_mkdir(inst->storage, VB_MIGRATE_FOLDER)) {
+        scene_manager_next_scene(inst->scene_manager, VbMigrateSceneMainMenu);
+        view_dispatcher_run(inst->view_dispatcher);
+    } else {
+        dialog_message_show_storage_error(inst->dialogs, "Can not create\napp folder");
+    }
 
     vb_migrate_free(inst);
     return 0;

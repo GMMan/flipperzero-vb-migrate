@@ -13,4 +13,5 @@ App(
     fap_description="Migration assistant for VB Lab",
     fap_author="cyanic",
     fap_weburl="",
+    fap_icon_assets="icons",
 )
