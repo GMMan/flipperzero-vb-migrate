@@ -1,0 +1,29 @@
+## Outline
+
+- Register Vital Bracelet
+  - Multi-popup flow
+    - Instruction: make sure the current mon on your VB has been moved to app
+    - Instruction: put your VB into connect mode and press next
+    - Scan: tap against the VB
+    - Instruction: put VB Lab in transfer to VB mode
+    - Scan: tap against phone
+    - Scan: tap against VB
+  - Save: extract VB type and prefill name, save prompt
+  - Go to selected?
+- Select Vital Bracelet
+  - Display list of saved VBs, pick item
+  - Menu with header: number of characters
+    - Transfer to Flipper: emulates template tag repeatedly
+      - Load template
+      - Set state to ready
+      - Check state, set check OK
+      - Check state, save auto if status finished and reload template
+    - Transfer to App: emulates each capture in turn
+      - Load saved capture
+      - Set state to ready
+      - Check state, load next capture if finished
+      - Allow skipping
+    - Clear captures: deletes all except template from VB folder
+- Delete Vital Bracelet
+  - Display list of saved VBs, pick item
+  - Delete folder of VB
