@@ -2,6 +2,7 @@
 
 #include "../vb_migrate_i.h"
 #include "../vb_tag.h"
+#include "vb_migrate_icons.h"
 
 #define TAG "vb_migrate_scene_from_app"
 
@@ -69,7 +70,7 @@ static bool vb_migrate_scene_from_app_is_state_changed(VbMigrate* inst, FromAppS
     if(state == FromAppStateEmulateReady) {
         return operation == VbTagOperationCheckDim;
     } else if(state == FromAppStateEmulateCheckDim) {
-        return operation == VbTagOperationReturnFromApp;
+        return operation == VbTagOperationCheckDim || operation == VbTagOperationReturnFromApp;
     }
 
     return false;
@@ -79,25 +80,42 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
     uint32_t curr_state =
         scene_manager_get_scene_state(inst->scene_manager, VbMigrateSceneFromApp);
     if(state != curr_state) {
+        Widget* widget = inst->widget;
+
         if(state == FromAppStateInstructions) {
-            widget_reset(inst->widget);
-            widget_add_string_multiline_element(
-                inst->widget,
+            widget_reset(widget);
+            widget_add_text_scroll_element(
+                widget,
                 0,
                 0,
-                AlignLeft,
-                AlignTop,
-                FontSecondary,
-                "Wake up and send your character on the VB Lab app, using Flipper as if it is a "
-                "Vital Bracelet. Just tap phone to Flipper directly when needed.");
+                128,
+                45,
+                "\e#To transfer characters\n"
+                "\e#to Flipper:\n"
+                "1. Wake up character from\n"
+                "storage\n"
+                "2. Sync character to Flipper\n"
+                "as if it was a Vital Bracelet.\n"
+                "Flipper will beep when it is\n"
+                "ready for the next step\n"
+                "3. The character is\n"
+                "automatically saved when the\n"
+                "transfer is complete, and will\n"
+                "be ready for another transfer\n"
+                "4. Repeat the above until you\n"
+                "have transferred all the\n"
+                "characters you want\n"
+                "\n"
+                "You can cancel at any time to\n"
+                "finish transferring.");
             widget_add_button_element(
-                inst->widget,
+                widget,
                 GuiButtonTypeLeft,
                 "Cancel",
                 vb_migrate_scene_from_app_widget_callback,
                 inst);
             widget_add_button_element(
-                inst->widget,
+                widget,
                 GuiButtonTypeRight,
                 "Next",
                 vb_migrate_scene_from_app_widget_callback,
@@ -107,19 +125,28 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
         } else if(state == FromAppStateEmulateReady) {
             vb_migrate_show_loading_popup(inst, true);
             if(vb_migrate_load_nfc(inst, inst->text_store, VB_MIGRATE_TEMPLATE_NAME)) {
-                FuriString* temp_str = furi_string_alloc_printf(
-                    "Ready, waiting for Dim check\nNum. captured: %d", inst->num_captured);
-                widget_reset(inst->widget);
+                widget_reset(widget);
                 widget_add_string_multiline_element(
-                    inst->widget,
-                    0,
-                    0,
-                    AlignLeft,
-                    AlignTop,
+                    widget,
+                    80,
+                    20,
+                    AlignCenter,
+                    AlignCenter,
                     FontPrimary,
+                    "Ready, waiting\nfor Dim check");
+                FuriString* temp_str =
+                    furi_string_alloc_printf("Charas. captured: %d", inst->num_captured);
+                widget_add_string_element(
+                    widget,
+                    63,
+                    43,
+                    AlignCenter,
+                    AlignCenter,
+                    FontSecondary,
                     furi_string_get_cstr(temp_str));
+                widget_add_icon_element(widget, 7, 7, &I_Touch_26x26);
                 widget_add_button_element(
-                    inst->widget,
+                    widget,
                     GuiButtonTypeLeft,
                     "Cancel",
                     vb_migrate_scene_from_app_widget_callback,
@@ -142,17 +169,18 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
             }
             vb_migrate_show_loading_popup(inst, false);
         } else if(state == FromAppStateEmulateCheckDim) {
-            widget_reset(inst->widget);
+            widget_reset(widget);
             widget_add_string_multiline_element(
-                inst->widget,
-                0,
-                0,
-                AlignLeft,
-                AlignTop,
+                widget,
+                80,
+                31,
+                AlignCenter,
+                AlignCenter,
                 FontPrimary,
-                "Waiting for second Dim check/transfer");
+                "Waiting for\nsecond Dim\ncheck/transfer");
+            widget_add_icon_element(widget, 7, 18, &I_Touch_26x26);
             widget_add_button_element(
-                inst->widget,
+                widget,
                 GuiButtonTypeLeft,
                 "Cancel",
                 vb_migrate_scene_from_app_widget_callback,
@@ -169,17 +197,17 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
                 inst);
             vb_migrate_blink_emulate(inst);
         } else if(state == FromAppStateEmulateTransferFromApp) {
-            widget_reset(inst->widget);
+            widget_reset(widget);
             widget_add_string_multiline_element(
-                inst->widget,
-                0,
-                0,
-                AlignLeft,
-                AlignTop,
+                widget,
+                80,
+                31,
+                AlignCenter,
+                AlignCenter,
                 FontPrimary,
-                "Transfer captured, saving...");
+                "Transfer captured,\nsaving...");
             widget_add_button_element(
-                inst->widget,
+                widget,
                 GuiButtonTypeLeft,
                 "Cancel",
                 vb_migrate_scene_from_app_widget_callback,
@@ -204,11 +232,12 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
             }
             furi_string_free(save_path);
         } else if(state == FromAppStateTemplateError) {
-            widget_reset(inst->widget);
+            widget_reset(widget);
             widget_add_string_multiline_element(
-                inst->widget, 0, 0, AlignLeft, AlignTop, FontPrimary, "Could not load template");
+                widget, 80, 31, AlignCenter, AlignCenter, FontPrimary, "Could not\nload template");
+            widget_add_icon_element(widget, 15, 22, &I_Error_18x18);
             widget_add_button_element(
-                inst->widget,
+                widget,
                 GuiButtonTypeLeft,
                 "Cancel",
                 vb_migrate_scene_from_app_widget_callback,
@@ -218,11 +247,12 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
             notification_message(inst->notifications, &sequence_error);
             notification_message(inst->notifications, &sequence_set_red_255);
         } else if(state == FromAppStateSaveError) {
-            widget_reset(inst->widget);
+            widget_reset(widget);
             widget_add_string_multiline_element(
-                inst->widget, 0, 0, AlignLeft, AlignTop, FontPrimary, "Could not save capture");
+                widget, 80, 31, AlignCenter, AlignCenter, FontPrimary, "Could not\nsave capture");
+            widget_add_icon_element(widget, 15, 22, &I_Error_18x18);
             widget_add_button_element(
-                inst->widget,
+                widget,
                 GuiButtonTypeLeft,
                 "Cancel",
                 vb_migrate_scene_from_app_widget_callback,
@@ -268,10 +298,21 @@ bool vb_migrate_scene_from_app_on_event(void* context, SceneManagerEvent event) 
                     vb_migrate_scene_from_app_set_state(inst, FromAppStateEmulateCheckDim);
                     consumed = true;
                 } else if(state == FromAppStateEmulateCheckDim) {
-                    nfc_worker_stop(inst->worker);
-                    vb_migrate_blink_stop(inst);
-                    vb_migrate_scene_from_app_set_state(inst, FromAppStateEmulateTransferFromApp);
-                    consumed = true;
+                    BantBlock* bant = vb_tag_get_bant_block(&inst->nfc_dev->dev_data);
+                    VbTagOperation operation = vb_tag_get_operation(bant);
+
+                    if(operation == VbTagOperationReturnFromApp) {
+                        nfc_worker_stop(inst->worker);
+                        vb_migrate_blink_stop(inst);
+                        vb_migrate_scene_from_app_set_state(
+                            inst, FromAppStateEmulateTransferFromApp);
+                        consumed = true;
+                    } else if(operation == VbTagOperationCheckDim) {
+                        // Don't need to reset tag, but should make a beep
+                        vb_migrate_blink_stop(inst);
+                        notification_message_block(inst->notifications, &sequence_success);
+                        vb_migrate_blink_emulate(inst);
+                    }
                 }
             }
         } else if(event.event == FromAppEventTypeTemplateLoadError) {

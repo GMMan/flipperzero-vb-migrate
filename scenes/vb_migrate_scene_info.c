@@ -29,7 +29,7 @@ void vb_migrate_scene_info_on_enter(void* context) {
         furi_string_cat_printf(temp_str, "\e#%s\n", product->name);
 
     // Number of mons loaded
-    furi_string_cat_printf(temp_str, "Num. captured: %d", inst->num_captured);
+    furi_string_cat_printf(temp_str, "Charas. captured: %d", inst->num_captured);
 
     widget_add_text_scroll_element(inst->widget, 0, 0, 128, 52, furi_string_get_cstr(temp_str));
     furi_string_free(temp_str);

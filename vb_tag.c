@@ -1,8 +1,8 @@
 #include "vb_tag.h"
 
-#define VB_NAME_VBDM "Vital Bracelet Digital Monster"
-#define VB_NAME_VBV "Vital Bracelet -V-"
-#define VB_NAME_VBC "Vital Bracelet Characters"
+#define VB_NAME_VBDM "VB Digital Monster"
+#define VB_NAME_VBV "VB Digivice -V-"
+#define VB_NAME_VBC "VB Characters"
 #define VB_NAME_VH "Vital Hero"
 
 #define VB_NAME_VBDM_SHORT "VBDM"

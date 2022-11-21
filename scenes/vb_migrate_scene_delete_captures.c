@@ -31,7 +31,7 @@ void vb_migrate_scene_delete_captures_on_enter(void* context) {
         inst);
 
     FuriString* temp_str =
-        furi_string_alloc_printf("%s\nNum. captured: %d", inst->text_store, inst->num_captured);
+        furi_string_alloc_printf("%s\nCharas. captured: %d", inst->text_store, inst->num_captured);
     widget_add_string_multiline_element(
         inst->widget, 64, 24, AlignCenter, AlignTop, FontSecondary, furi_string_get_cstr(temp_str));
     furi_string_free(temp_str);

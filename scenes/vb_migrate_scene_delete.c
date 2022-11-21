@@ -37,7 +37,7 @@ void vb_migrate_scene_delete_on_enter(void* context) {
     widget_add_button_element(
         inst->widget, GuiButtonTypeRight, "Delete", vb_migrate_scene_delete_widget_callback, inst);
 
-    furi_string_printf(temp_str, "%s\nNum. captured: %d", inst->text_store, inst->num_captured);
+    furi_string_printf(temp_str, "%s\nCharas. captured: %d", inst->text_store, inst->num_captured);
     widget_add_string_multiline_element(
         inst->widget, 64, 24, AlignCenter, AlignTop, FontSecondary, furi_string_get_cstr(temp_str));
     furi_string_free(temp_str);

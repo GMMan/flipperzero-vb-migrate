@@ -2,6 +2,7 @@
 
 #include "../vb_migrate_i.h"
 #include "../vb_tag.h"
+#include "vb_migrate_icons.h"
 
 #define TAG "vb_migrate_scene_to_app"
 
@@ -68,65 +69,72 @@ static bool vb_migrate_scene_to_app_is_state_changed(VbMigrate* inst, ToAppState
 static void vb_migrate_scene_to_app_set_state(VbMigrate* inst, ToAppState state) {
     uint32_t curr_state = scene_manager_get_scene_state(inst->scene_manager, VbMigrateSceneToApp);
     if(state != curr_state) {
+        Widget* widget = inst->widget;
+
         if(state == ToAppStateInstructions) {
-            widget_reset(inst->widget);
-            widget_add_string_multiline_element(
-                inst->widget,
+            widget_reset(widget);
+            widget_add_text_scroll_element(
+                widget,
                 0,
                 0,
-                AlignLeft,
-                AlignTop,
-                FontSecondary,
-                "Transfer to VB Lab, save in storage, and repeat.");
+                128,
+                45,
+                "\e#To transfer characters\n"
+                "\e#from Flipper:\n"
+                "1. Put the current character\n"
+                "into storage\n"
+                "2. Sync character from\n"
+                "Flipperas if it was a Vital\n"
+                "Bracelet. Flipper will beep\n"
+                "and automatically advance to\n"
+                "the next captured character\n"
+                "when VB Lab has transferred\n"
+                "the current character\n"
+                "\n"
+                "-> You can press the right\n"
+                "key to skip sending the\n"
+                "current character\n"
+                "3. Repeat the above until you\n"
+                "have transferred all the\n"
+                "characters you want\n"
+                "\n"
+                "You can cancel at any time to\n"
+                "finish transferring.");
             widget_add_button_element(
-                inst->widget,
-                GuiButtonTypeLeft,
-                "Cancel",
-                vb_migrate_scene_to_app_widget_callback,
-                inst);
+                widget, GuiButtonTypeLeft, "Cancel", vb_migrate_scene_to_app_widget_callback, inst);
             widget_add_button_element(
-                inst->widget,
-                GuiButtonTypeRight,
-                "Next",
-                vb_migrate_scene_to_app_widget_callback,
-                inst);
+                widget, GuiButtonTypeRight, "Next", vb_migrate_scene_to_app_widget_callback, inst);
 
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
         } else if(state == ToAppStateEmulateReady) {
             view_dispatcher_send_custom_event(inst->view_dispatcher, ToAppEventTypeEmulateStart);
         } else if(state == ToAppStateLoadError) {
             FuriString* temp_str =
-                furi_string_alloc_printf("Could not load capture %03d", inst->next_id);
-            widget_reset(inst->widget);
+                furi_string_alloc_printf("Could not load\ncapture %03d", inst->next_id);
+            widget_reset(widget);
             widget_add_string_multiline_element(
-                inst->widget,
-                0,
-                0,
-                AlignLeft,
-                AlignTop,
+                widget,
+                80,
+                31,
+                AlignCenter,
+                AlignCenter,
                 FontPrimary,
                 furi_string_get_cstr(temp_str));
+            widget_add_icon_element(widget, 15, 22, &I_Error_18x18);
             widget_add_button_element(
-                inst->widget,
-                GuiButtonTypeLeft,
-                "Cancel",
-                vb_migrate_scene_to_app_widget_callback,
-                inst);
+                widget, GuiButtonTypeLeft, "Cancel", vb_migrate_scene_to_app_widget_callback, inst);
 
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
             furi_string_free(temp_str);
             notification_message(inst->notifications, &sequence_error);
             notification_message(inst->notifications, &sequence_set_red_255);
         } else if(state == ToAppStateComplete) {
-            widget_reset(inst->widget);
+            widget_reset(widget);
+            widget_add_icon_element(widget, 32, 5, &I_DolphinNice_96x59);
             widget_add_string_multiline_element(
-                inst->widget, 0, 0, AlignLeft, AlignTop, FontPrimary, "Transfers complete.");
+                widget, 28, 26, AlignCenter, AlignBottom, FontPrimary, "Transfers\ncomplete");
             widget_add_button_element(
-                inst->widget,
-                GuiButtonTypeRight,
-                "Done",
-                vb_migrate_scene_to_app_widget_callback,
-                inst);
+                widget, GuiButtonTypeRight, "Done", vb_migrate_scene_to_app_widget_callback, inst);
 
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
         } else {
@@ -155,32 +163,32 @@ static void vb_migrate_scene_to_app_load_capture(VbMigrate* inst, bool go_next) 
 
         vb_migrate_show_loading_popup(inst, true);
         if(vb_migrate_load_nfc(inst, inst->text_store, furi_string_get_cstr(temp_str))) {
-            furi_string_printf(
-                temp_str,
-                "Ready, waiting for transfer\nProgress: %d/%d",
-                inst->num_sent + 1,
-                inst->num_captured);
-            widget_reset(inst->widget);
+            Widget* widget = inst->widget;
+
+            widget_reset(widget);
             widget_add_string_multiline_element(
-                inst->widget,
-                0,
-                0,
-                AlignLeft,
-                AlignTop,
+                widget,
+                80,
+                20,
+                AlignCenter,
+                AlignCenter,
                 FontPrimary,
+                "Ready, waiting\nfor transfer");
+            furi_string_printf(
+                temp_str, "Progress: %d/%d", inst->num_sent + 1, inst->num_captured);
+            widget_add_string_element(
+                widget,
+                63,
+                43,
+                AlignCenter,
+                AlignCenter,
+                FontSecondary,
                 furi_string_get_cstr(temp_str));
+            widget_add_icon_element(widget, 7, 7, &I_Touch_26x26);
             widget_add_button_element(
-                inst->widget,
-                GuiButtonTypeLeft,
-                "Cancel",
-                vb_migrate_scene_to_app_widget_callback,
-                inst);
+                widget, GuiButtonTypeLeft, "Cancel", vb_migrate_scene_to_app_widget_callback, inst);
             widget_add_button_element(
-                inst->widget,
-                GuiButtonTypeRight,
-                "Skip",
-                vb_migrate_scene_to_app_widget_callback,
-                inst);
+                widget, GuiButtonTypeRight, "Skip", vb_migrate_scene_to_app_widget_callback, inst);
 
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
 
