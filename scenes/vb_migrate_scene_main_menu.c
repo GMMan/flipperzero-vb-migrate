@@ -5,7 +5,7 @@ typedef enum {
     SubmenuMainIndexSelect,
 } SubmenuMainIndex;
 
-void vb_migrate_scene_main_menu_submenu_callback(void* context, uint32_t index) {
+static void vb_migrate_scene_main_menu_submenu_callback(void* context, uint32_t index) {
     VbMigrate* inst = context;
 
     view_dispatcher_send_custom_event(inst->view_dispatcher, index);

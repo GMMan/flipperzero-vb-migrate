@@ -1,6 +1,6 @@
 #include "../vb_migrate_i.h"
 
-void vb_migrate_scene_select_file_select_callback(bool result, void* context) {
+static void vb_migrate_scene_select_file_select_callback(bool result, void* context) {
     VbMigrate* inst = context;
 
     view_dispatcher_send_custom_event(inst->view_dispatcher, result);

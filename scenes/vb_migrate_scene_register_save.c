@@ -10,7 +10,7 @@ typedef enum {
     RegisterSaveEventTextInput,
 } RegisterSaveEvent;
 
-void vb_migrate_scene_register_save_text_input_callback(void* context) {
+static void vb_migrate_scene_register_save_text_input_callback(void* context) {
     VbMigrate* inst = context;
 
     view_dispatcher_send_custom_event(inst->view_dispatcher, RegisterSaveEventTextInput);
@@ -59,6 +59,7 @@ bool vb_migrate_scene_register_save_on_event(void* context, SceneManagerEvent ev
         if(event.event == RegisterSaveEventTextInput) {
             if(strlen(inst->text_store) != 0) {
                 if(vb_migrate_save_nfc(inst, inst->text_store, VB_MIGRATE_TEMPLATE_NAME)) {
+                    inst->num_captured = 0;
                     // Go to success
                     scene_manager_next_scene(inst->scene_manager, VbMigrateSceneSaveSuccess);
                 }

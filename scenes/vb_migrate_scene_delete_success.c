@@ -1,7 +1,7 @@
 #include "../vb_migrate_i.h"
 #include "vb_migrate_icons.h"
 
-void vb_migrate_scene_delete_success_popup_callback(void* context) {
+static void vb_migrate_scene_delete_success_popup_callback(void* context) {
     VbMigrate* inst = context;
     view_dispatcher_send_custom_event(inst->view_dispatcher, 0);
 }

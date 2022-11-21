@@ -27,7 +27,6 @@ typedef enum {
 static void
     vb_migrate_scene_register_widget_callback(GuiButtonType result, InputType type, void* context) {
     VbMigrate* inst = context;
-    UNUSED(result);
 
     if(type == InputTypeShort) {
         if(result == GuiButtonTypeRight)
