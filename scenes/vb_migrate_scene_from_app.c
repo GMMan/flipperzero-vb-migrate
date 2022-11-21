@@ -105,27 +105,29 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
 
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
         } else if(state == FromAppStateEmulateReady) {
-            FuriString* temp_str = furi_string_alloc_printf(
-                "Ready, waiting for Dim check\nNum. captured: %d", inst->num_captured);
-            widget_reset(inst->widget);
-            widget_add_string_multiline_element(
-                inst->widget,
-                0,
-                0,
-                AlignLeft,
-                AlignTop,
-                FontPrimary,
-                furi_string_get_cstr(temp_str));
-            widget_add_button_element(
-                inst->widget,
-                GuiButtonTypeLeft,
-                "Cancel",
-                vb_migrate_scene_from_app_widget_callback,
-                inst);
-
-            view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
-            furi_string_free(temp_str);
+            vb_migrate_show_loading_popup(inst, true);
             if(vb_migrate_load_nfc(inst, inst->text_store, VB_MIGRATE_TEMPLATE_NAME)) {
+                FuriString* temp_str = furi_string_alloc_printf(
+                    "Ready, waiting for Dim check\nNum. captured: %d", inst->num_captured);
+                widget_reset(inst->widget);
+                widget_add_string_multiline_element(
+                    inst->widget,
+                    0,
+                    0,
+                    AlignLeft,
+                    AlignTop,
+                    FontPrimary,
+                    furi_string_get_cstr(temp_str));
+                widget_add_button_element(
+                    inst->widget,
+                    GuiButtonTypeLeft,
+                    "Cancel",
+                    vb_migrate_scene_from_app_widget_callback,
+                    inst);
+
+                view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
+                furi_string_free(temp_str);
+
                 vb_migrate_scene_from_app_set_nfc_state(inst, state);
                 nfc_worker_start(
                     inst->worker,
@@ -138,6 +140,7 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
                 view_dispatcher_send_custom_event(
                     inst->view_dispatcher, FromAppEventTypeTemplateLoadError);
             }
+            vb_migrate_show_loading_popup(inst, false);
         } else if(state == FromAppStateEmulateCheckDim) {
             widget_reset(inst->widget);
             widget_add_string_multiline_element(

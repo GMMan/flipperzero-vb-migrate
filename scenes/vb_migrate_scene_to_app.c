@@ -148,32 +148,42 @@ static void vb_migrate_scene_to_app_load_capture(VbMigrate* inst, bool go_next) 
     if(inst->num_sent == inst->num_captured) {
         vb_migrate_scene_to_app_set_state(inst, ToAppStateComplete);
     } else {
-        FuriString* temp_str = furi_string_alloc_printf(
-            "Ready, waiting for transfer\nProgress: %d/%d",
-            inst->num_sent + 1,
-            inst->num_captured);
-        widget_reset(inst->widget);
-        widget_add_string_multiline_element(
-            inst->widget, 0, 0, AlignLeft, AlignTop, FontPrimary, furi_string_get_cstr(temp_str));
-        widget_add_button_element(
-            inst->widget,
-            GuiButtonTypeLeft,
-            "Cancel",
-            vb_migrate_scene_to_app_widget_callback,
-            inst);
-        widget_add_button_element(
-            inst->widget,
-            GuiButtonTypeRight,
-            "Skip",
-            vb_migrate_scene_to_app_widget_callback,
-            inst);
-
-        view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
-
         uint32_t state = scene_manager_get_scene_state(inst->scene_manager, VbMigrateSceneToApp);
         inst->next_id = vb_migrate_get_next_id(inst, inst->text_store, inst->next_id, true);
-        furi_string_printf(temp_str, "%03d%s", inst->next_id, NFC_APP_EXTENSION);
+        FuriString* temp_str =
+            furi_string_alloc_printf("%03d%s", inst->next_id, NFC_APP_EXTENSION);
+
+        vb_migrate_show_loading_popup(inst, true);
         if(vb_migrate_load_nfc(inst, inst->text_store, furi_string_get_cstr(temp_str))) {
+            furi_string_printf(
+                temp_str,
+                "Ready, waiting for transfer\nProgress: %d/%d",
+                inst->num_sent + 1,
+                inst->num_captured);
+            widget_reset(inst->widget);
+            widget_add_string_multiline_element(
+                inst->widget,
+                0,
+                0,
+                AlignLeft,
+                AlignTop,
+                FontPrimary,
+                furi_string_get_cstr(temp_str));
+            widget_add_button_element(
+                inst->widget,
+                GuiButtonTypeLeft,
+                "Cancel",
+                vb_migrate_scene_to_app_widget_callback,
+                inst);
+            widget_add_button_element(
+                inst->widget,
+                GuiButtonTypeRight,
+                "Skip",
+                vb_migrate_scene_to_app_widget_callback,
+                inst);
+
+            view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
+
             vb_migrate_scene_to_app_set_nfc_state(inst, state);
             nfc_worker_start(
                 inst->worker,
@@ -186,6 +196,7 @@ static void vb_migrate_scene_to_app_load_capture(VbMigrate* inst, bool go_next) 
             view_dispatcher_send_custom_event(
                 inst->view_dispatcher, ToAppEventTypeCaptureLoadError);
         }
+        vb_migrate_show_loading_popup(inst, false);
         furi_string_free(temp_str);
     }
 }
