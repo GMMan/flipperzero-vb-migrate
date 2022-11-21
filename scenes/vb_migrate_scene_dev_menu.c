@@ -23,12 +23,14 @@ void vb_migrate_scene_dev_menu_on_enter(void* context) {
         SubmenuDevMenuIndexTransferFromApp,
         vb_migrate_scene_dev_menu_submenu_callback,
         inst);
-    submenu_add_item(
-        submenu,
-        "Transfer To App",
-        SubmenuDevMenuIndexTransferToApp,
-        vb_migrate_scene_dev_menu_submenu_callback,
-        inst);
+    if(inst->num_captured != 0) {
+        submenu_add_item(
+            submenu,
+            "Transfer To App",
+            SubmenuDevMenuIndexTransferToApp,
+            vb_migrate_scene_dev_menu_submenu_callback,
+            inst);
+    }
     submenu_add_item(
         submenu,
         "Delete Vital Bracelet",
@@ -48,6 +50,8 @@ bool vb_migrate_scene_dev_menu_on_event(void* context, SceneManagerEvent event) 
             scene_manager_next_scene(inst->scene_manager, VbMigrateSceneFromApp);
             consumed = true;
         } else if(event.event == SubmenuDevMenuIndexTransferToApp) {
+            scene_manager_next_scene(inst->scene_manager, VbMigrateSceneToApp);
+            consumed = true;
         } else if(event.event == SubmenuDevMenuIndexDeleteVb) {
             scene_manager_next_scene(inst->scene_manager, VbMigrateSceneDelete);
             consumed = true;

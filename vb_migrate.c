@@ -126,32 +126,17 @@ int vb_migrate_count_captured_mons(VbMigrate* inst, const char* dev_name) {
     return count;
 }
 
-FuriString* vb_migrate_get_last_path_component(const char* path) {
-    FuriString* str = furi_string_alloc();
-
-    size_t path_len = strlen(path);
-    if(path_len > 0) {
-        int right_index = path_len - 1;
-        if(path[path_len - 1] == '/') --right_index;
-
-        while(right_index > 0 && path[right_index] != '/') --right_index;
-
-        furi_string_set_str(str, &path[right_index + 1]);
-        furi_string_trim(str, "/");
-    }
-
-    return str;
-}
-
-int vb_migrate_get_next_save_id(VbMigrate* inst, const char* dev_name, int i) {
+int vb_migrate_get_next_id(VbMigrate* inst, const char* dev_name, int i, bool is_load) {
     FuriString* dir_path = furi_string_alloc_printf("%s/%s", VB_MIGRATE_FOLDER, dev_name);
     FuriString* file_path = furi_string_alloc();
     while(true) {
         furi_string_printf(
             file_path, "%s/%03d%s", furi_string_get_cstr(dir_path), i, NFC_APP_EXTENSION);
-        if(storage_common_stat(inst->storage, furi_string_get_cstr(file_path), NULL) ==
-           FSE_NOT_EXIST)
-            break;
+        bool exit_cond =
+            storage_common_stat(inst->storage, furi_string_get_cstr(file_path), NULL) ==
+            FSE_NOT_EXIST;
+        if(is_load) exit_cond = !exit_cond;
+        if(exit_cond) break;
         ++i;
     }
 

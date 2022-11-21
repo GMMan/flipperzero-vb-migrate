@@ -45,6 +45,7 @@ struct VbMigrate {
     uint8_t captured_uid[7];
     int num_captured;
     int next_id;
+    int num_sent;
 };
 
 typedef enum {
@@ -64,8 +65,7 @@ void vb_migrate_text_store_set(VbMigrate* inst, const char* text, ...);
 void vb_migrate_text_store_clear(VbMigrate* inst);
 bool vb_migrate_save_nfc(VbMigrate* inst, const char* dev_name, const char* file_name);
 bool vb_migrate_load_nfc(VbMigrate* inst, const char* dev_name, const char* file_name);
-FuriString* vb_migrate_get_last_path_component(const char* path);
 int vb_migrate_count_captured_mons(VbMigrate* inst, const char* dev_name);
 bool vb_migrate_delete(VbMigrate* inst, const char* dev_name, bool whole_vb);
-int vb_migrate_get_next_save_id(VbMigrate* inst, const char* dev_name, int i);
+int vb_migrate_get_next_id(VbMigrate* inst, const char* dev_name, int i, bool is_load);
 void vb_migrate_show_loading_popup(VbMigrate* inst, bool show);

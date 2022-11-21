@@ -41,10 +41,6 @@ static bool vb_migrate_scene_from_app_worker_callback(NfcWorkerEvent event, void
     bool result = false;
 
     if(event == NfcWorkerEventSuccess) {
-        BantBlock* bant = vb_tag_get_bant_block(&inst->nfc_dev->dev_data);
-        FURI_LOG_D(
-            TAG, "Status: %d, operation: %d", vb_tag_get_status(bant), vb_tag_get_operation(bant));
-
         view_dispatcher_send_custom_event(inst->view_dispatcher, FromAppEventTypeTagWrite);
         result = true;
     }
@@ -71,9 +67,9 @@ static bool vb_migrate_scene_from_app_is_state_changed(VbMigrate* inst, FromAppS
     VbTagOperation operation = vb_tag_get_operation(bant);
 
     if(state == FromAppStateEmulateReady) {
-        return operation != VbTagOperationReady;
+        return operation == VbTagOperationCheckDim;
     } else if(state == FromAppStateEmulateCheckDim) {
-        return operation != VbTagOperationReady && operation != VbTagOperationCheckDim;
+        return operation == VbTagOperationReturnFromApp;
     }
 
     return false;
@@ -193,7 +189,7 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
             notification_message(inst->notifications, &sequence_success);
 
             // Save the tag
-            inst->next_id = vb_migrate_get_next_save_id(inst, inst->text_store, inst->next_id);
+            inst->next_id = vb_migrate_get_next_id(inst, inst->text_store, inst->next_id, false);
             FuriString* save_path =
                 furi_string_alloc_printf("%03d%s", inst->next_id, NFC_APP_EXTENSION);
             if(vb_migrate_save_nfc(inst, inst->text_store, furi_string_get_cstr(save_path))) {
@@ -216,6 +212,7 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
                 inst);
 
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
+            notification_message(inst->notifications, &sequence_error);
             notification_message(inst->notifications, &sequence_set_red_255);
         } else if(state == FromAppStateSaveError) {
             widget_reset(inst->widget);
@@ -229,6 +226,7 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
                 inst);
 
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
+            notification_message(inst->notifications, &sequence_error);
             notification_message(inst->notifications, &sequence_set_red_255);
         } else {
             furi_crash("Unknown new state in vb_migrate_scene_from_app_set_state");
