@@ -2,6 +2,8 @@
 
 #include <storage/storage.h>
 
+#define VB_MIGRATE_VERSION "0.1"
+
 #define VB_MIGRATE_FOLDER ANY_PATH("vb_migrate")
 
 typedef struct VbMigrate VbMigrate;

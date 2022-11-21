@@ -3,6 +3,7 @@
 typedef enum {
     SubmenuMainIndexRegister,
     SubmenuMainIndexSelect,
+    SubmenuMainIndexAbout,
 } SubmenuMainIndex;
 
 static void vb_migrate_scene_main_menu_submenu_callback(void* context, uint32_t index) {
@@ -27,6 +28,8 @@ void vb_migrate_scene_main_menu_on_enter(void* context) {
         SubmenuMainIndexSelect,
         vb_migrate_scene_main_menu_submenu_callback,
         inst);
+    submenu_add_item(
+        submenu, "About", SubmenuMainIndexAbout, vb_migrate_scene_main_menu_submenu_callback, inst);
 
     view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewMenu);
 }
@@ -41,6 +44,9 @@ bool vb_migrate_scene_main_menu_on_event(void* context, SceneManagerEvent event)
             consumed = true;
         } else if(event.event == SubmenuMainIndexSelect) {
             scene_manager_next_scene(inst->scene_manager, VbMigrateSceneSelect);
+            consumed = true;
+        } else if(event.event == SubmenuMainIndexAbout) {
+            scene_manager_next_scene(inst->scene_manager, VbMigrateSceneAbout);
             consumed = true;
         }
     }
