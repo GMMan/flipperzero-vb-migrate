@@ -3,6 +3,7 @@ on: [push]
 
 jobs:
   build:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
