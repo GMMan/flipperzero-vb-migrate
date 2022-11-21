@@ -20,14 +20,14 @@ void vb_migrate_scene_dev_menu_on_enter(void* context) {
     // Add your menu items
     submenu_add_item(
         submenu,
-        "Transfer From App",
+        "Transfer App > Flipper",
         SubmenuDevMenuIndexTransferFromApp,
         vb_migrate_scene_dev_menu_submenu_callback,
         inst);
     if(inst->num_captured != 0) {
         submenu_add_item(
             submenu,
-            "Transfer To App",
+            "Transfer Flipper > App",
             SubmenuDevMenuIndexTransferToApp,
             vb_migrate_scene_dev_menu_submenu_callback,
             inst);

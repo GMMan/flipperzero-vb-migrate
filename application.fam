@@ -8,8 +8,8 @@ App(
     fap_version=(0,1),
     fap_libs=["nfc", "misc", "mbedtls", "ST25RFAL002", "gcc", "toolbox"],
     fap_category="Tools",
-    fap_description="Migration assistant for VB Lab",
+    fap_description="Makes transferring characters with VB Lab less cumbersome",
     fap_author="cyanic",
-    fap_weburl="",
+    fap_weburl="https://github.com/GMMan/flipperzero-vb-migrate",
     fap_icon_assets="icons",
 )

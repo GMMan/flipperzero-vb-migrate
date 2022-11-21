@@ -137,7 +137,11 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
                 AlignLeft,
                 AlignTop,
                 FontSecondary,
-                "Prepare VB Lab:\n1. Open the \"Scan\" screen\n2. Tap \"Vital Bracelet -> App\"");
+                "Prepare VB Lab:\n"
+                "1. Ensure current character in\n"
+                "VB Lab has been put in storage\n"
+                "2. Open the \"Scan\" screen\n"
+                "3. Tap \"Vital Bracelet -> App\"");
             widget_add_button_element(
                 widget,
                 GuiButtonTypeLeft,
