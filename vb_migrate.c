@@ -131,7 +131,11 @@ int vb_migrate_get_next_id(VbMigrate* inst, const char* dev_name, int i, bool is
     FuriString* file_path = furi_string_alloc();
     while(true) {
         furi_string_printf(
-            file_path, "%s/%03d%s", furi_string_get_cstr(dir_path), i, NFC_APP_EXTENSION);
+            file_path,
+            "%s/" VB_MIGRATE_CAPTURE_FORMAT,
+            furi_string_get_cstr(dir_path),
+            i,
+            NFC_APP_EXTENSION);
         bool exit_cond =
             storage_common_stat(inst->storage, furi_string_get_cstr(file_path), NULL) ==
             FSE_NOT_EXIST;
