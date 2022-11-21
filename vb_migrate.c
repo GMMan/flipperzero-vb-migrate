@@ -143,6 +143,36 @@ FuriString* vb_migrate_get_last_path_component(const char* path) {
     return str;
 }
 
+int vb_migrate_get_next_save_id(VbMigrate* inst, const char* dev_name, int i) {
+    FuriString* dir_path = furi_string_alloc_printf("%s/%s", VB_MIGRATE_FOLDER, dev_name);
+    FuriString* file_path = furi_string_alloc();
+    while(true) {
+        furi_string_printf(
+            file_path, "%s/%03d%s", furi_string_get_cstr(dir_path), i, NFC_APP_EXTENSION);
+        if(storage_common_stat(inst->storage, furi_string_get_cstr(file_path), NULL) ==
+           FSE_NOT_EXIST)
+            break;
+        ++i;
+    }
+
+    furi_string_free(file_path);
+    furi_string_free(dir_path);
+    return i;
+}
+
+void vb_migrate_show_loading_popup(VbMigrate* inst, bool show) {
+    TaskHandle_t timer_task = xTaskGetHandle(configTIMER_SERVICE_TASK_NAME);
+
+    if(show) {
+        // Raise timer priority so that animations can play
+        vTaskPrioritySet(timer_task, configMAX_PRIORITIES - 1);
+        view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewLoading);
+    } else {
+        // Restore default timer priority
+        vTaskPrioritySet(timer_task, configTIMER_TASK_PRIORITY);
+    }
+}
+
 VbMigrate* vb_migrate_alloc() {
     VbMigrate* inst = malloc(sizeof(VbMigrate));
 

@@ -45,9 +45,8 @@ bool vb_migrate_scene_dev_menu_on_event(void* context, SceneManagerEvent event) 
 
     if(event.type == SceneManagerEventTypeCustom) {
         if(event.event == SubmenuDevMenuIndexTransferFromApp) {
-            // Handle item selection here
-
-            // consumed = true;
+            scene_manager_next_scene(inst->scene_manager, VbMigrateSceneFromApp);
+            consumed = true;
         } else if(event.event == SubmenuDevMenuIndexTransferToApp) {
         } else if(event.event == SubmenuDevMenuIndexDeleteVb) {
             scene_manager_next_scene(inst->scene_manager, VbMigrateSceneDelete);

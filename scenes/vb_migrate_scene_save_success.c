@@ -5,7 +5,7 @@ typedef enum {
     SaveSuccessEventPopup,
 } SaveSuccessEvent;
 
-void vb_migrate_scene_save_success_popup_callback(void* context) {
+static void vb_migrate_scene_save_success_popup_callback(void* context) {
     VbMigrate* inst = context;
 
     view_dispatcher_send_custom_event(inst->view_dispatcher, SaveSuccessEventPopup);
