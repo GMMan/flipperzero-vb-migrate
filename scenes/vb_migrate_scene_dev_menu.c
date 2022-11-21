@@ -3,6 +3,7 @@
 typedef enum {
     SubmenuDevMenuIndexTransferFromApp,
     SubmenuDevMenuIndexTransferToApp,
+    SubmenuDevMenuIndexClearCaptures,
     SubmenuDevMenuIndexDeleteVb,
 } SubmenuDevMenuIndex;
 
@@ -30,6 +31,12 @@ void vb_migrate_scene_dev_menu_on_enter(void* context) {
             SubmenuDevMenuIndexTransferToApp,
             vb_migrate_scene_dev_menu_submenu_callback,
             inst);
+        submenu_add_item(
+            submenu,
+            "Clear Captures",
+            SubmenuDevMenuIndexClearCaptures,
+            vb_migrate_scene_dev_menu_submenu_callback,
+            inst);
     }
     submenu_add_item(
         submenu,
@@ -51,6 +58,9 @@ bool vb_migrate_scene_dev_menu_on_event(void* context, SceneManagerEvent event) 
             consumed = true;
         } else if(event.event == SubmenuDevMenuIndexTransferToApp) {
             scene_manager_next_scene(inst->scene_manager, VbMigrateSceneToApp);
+            consumed = true;
+        } else if(event.event == SubmenuDevMenuIndexClearCaptures) {
+            scene_manager_next_scene(inst->scene_manager, VbMigrateSceneDeleteCaptures);
             consumed = true;
         } else if(event.event == SubmenuDevMenuIndexDeleteVb) {
             scene_manager_next_scene(inst->scene_manager, VbMigrateSceneDelete);
