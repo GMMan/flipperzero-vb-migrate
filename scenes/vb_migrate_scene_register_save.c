@@ -76,12 +76,16 @@ bool vb_migrate_scene_register_save_on_event(void* context, SceneManagerEvent ev
     if(event.type == SceneManagerEventTypeCustom) {
         if(event.event == RegisterSaveEventTextInput) {
             if(strlen(inst->text_store) != 0) {
+                vb_migrate_show_loading_popup(inst, true);
                 if(vb_migrate_save_nfc(inst, inst->text_store, VB_MIGRATE_TEMPLATE_NAME)) {
                     inst->num_captured = 0;
                     // Go to success
                     scene_manager_next_scene(inst->scene_manager, VbMigrateSceneSaveSuccess);
+                } else {
+                    // Otherwise just stay here
+                    view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewTextInput);
                 }
-                // Otherwise just stay here
+                vb_migrate_show_loading_popup(inst, false);
 
                 consumed = true;
             }
