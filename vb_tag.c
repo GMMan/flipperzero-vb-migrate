@@ -29,13 +29,49 @@
 #define VB_NAME_VH_SHORT "VH"
 
 static const VbTagProduct vb_tag_valid_products[] = {
-    {.item_id = 0x0200, .item_no = 0x0100, .name = VB_NAME_VBDM, .short_name = VB_NAME_VBDM_SHORT},
-    {.item_id = 0x0200, .item_no = 0x0200, .name = VB_NAME_VBDM, .short_name = VB_NAME_VBDM_SHORT},
-    {.item_id = 0x0200, .item_no = 0x0300, .name = VB_NAME_VBDM, .short_name = VB_NAME_VBDM_SHORT},
-    {.item_id = 0x0200, .item_no = 0x0400, .name = VB_NAME_VBV, .short_name = VB_NAME_VBV_SHORT},
-    {.item_id = 0x0200, .item_no = 0x0500, .name = VB_NAME_VBV, .short_name = VB_NAME_VBV_SHORT},
-    {.item_id = 0x0200, .item_no = 0x0600, .name = VB_NAME_VH, .short_name = VB_NAME_VH_SHORT},
-    {.item_id = 0x0300, .item_no = 0x0100, .name = VB_NAME_VBC, .short_name = VB_NAME_VBC_SHORT},
+    {.item_id = 0x0200,
+     .item_no = 0x0100,
+     .name = VB_NAME_VBDM,
+     .short_name = VB_NAME_VBDM_SHORT,
+     .type = VbTagTypeVBDM},
+    {.item_id = 0x0200,
+     .item_no = 0x0200,
+     .name = VB_NAME_VBDM,
+     .short_name = VB_NAME_VBDM_SHORT,
+     .type = VbTagTypeVBDM},
+    {.item_id = 0x0200,
+     .item_no = 0x0300,
+     .name = VB_NAME_VBDM,
+     .short_name = VB_NAME_VBDM_SHORT,
+     .type = VbTagTypeVBDM},
+    {.item_id = 0x0200,
+     .item_no = 0x0400,
+     .name = VB_NAME_VBV,
+     .short_name = VB_NAME_VBV_SHORT,
+     .type = VbTagTypeVBV},
+    {.item_id = 0x0200,
+     .item_no = 0x0500,
+     .name = VB_NAME_VBV,
+     .short_name = VB_NAME_VBV_SHORT,
+     .type = VbTagTypeVBV},
+    {.item_id = 0x0200,
+     .item_no = 0x0600,
+     .name = VB_NAME_VH,
+     .short_name = VB_NAME_VH_SHORT,
+     .type = VbTagTypeVH},
+    {.item_id = 0x0300,
+     .item_no = 0x0100,
+     .name = VB_NAME_VBC,
+     .short_name = VB_NAME_VBC_SHORT,
+     .type = VbTagTypeVBC},
+};
+
+static const char* vb_tag_type_names[] = {
+    "Unknown",
+    VB_NAME_VBDM_SHORT,
+    VB_NAME_VBV_SHORT,
+    VB_NAME_VBC_SHORT,
+    VB_NAME_VH_SHORT,
 };
 
 BantBlock* vb_tag_get_bant_block(NfcDeviceData* dev) {
@@ -75,4 +111,34 @@ VbTagOperation vb_tag_get_operation(const BantBlock* bant) {
 
 void vb_tag_set_operation(BantBlock* bant, VbTagOperation operation) {
     bant->operation = operation;
+}
+
+const VbTagProduct* vb_tag_get_default_product(VbTagType type) {
+    // IMPORTANT: Update when vb_tag_valid_products changes
+    switch(type) {
+    case VbTagTypeVBDM:
+        return &vb_tag_valid_products[2];
+    case VbTagTypeVBV:
+        return &vb_tag_valid_products[4];
+    case VbTagTypeVBC:
+        return &vb_tag_valid_products[6];
+    case VbTagTypeVH:
+        return &vb_tag_valid_products[5];
+
+    default:
+        return NULL;
+    }
+}
+
+void vb_tag_set_item_id_no(BantBlock* bant, const VbTagProduct* product) {
+    bant->item_id = product->item_id;
+    bant->item_no = product->item_no;
+}
+
+const char* vb_tag_get_tag_type_name(VbTagType type) {
+    if(type < VbTagTypeMax) {
+        return vb_tag_type_names[type];
+    } else {
+        return NULL;
+    }
 }

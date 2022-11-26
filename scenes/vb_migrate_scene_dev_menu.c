@@ -21,49 +21,53 @@
 typedef enum {
     SubmenuDevMenuIndexTransferFromApp,
     SubmenuDevMenuIndexTransferToApp,
+    SubmenuDevMenuIndexSpoof,
     SubmenuDevMenuIndexClearCaptures,
     SubmenuDevMenuIndexDeleteVb,
+    SubmenuDevMenuIndexSpoofSelection, // Always keep this last because we add tag type to it
 } SubmenuDevMenuIndex;
 
-static void vb_migrate_scene_dev_menu_submenu_callback(void* context, uint32_t index) {
+static void vb_migrate_scene_dev_menu_var_list_enter_callback(void* context, uint32_t index) {
     VbMigrate* inst = context;
 
     view_dispatcher_send_custom_event(inst->view_dispatcher, index);
 }
 
+static void vb_migrate_scene_dev_menu_spoof_change_callback(VariableItem* item) {
+    VbMigrate* inst = variable_item_get_context(item);
+    uint8_t index = variable_item_get_current_value_index(item);
+
+    VbTagType tag_type = index + 1;
+    variable_item_set_current_value_text(item, vb_tag_get_tag_type_name(tag_type));
+    view_dispatcher_send_custom_event(
+        inst->view_dispatcher, SubmenuDevMenuIndexSpoofSelection + tag_type);
+}
+
 void vb_migrate_scene_dev_menu_on_enter(void* context) {
     VbMigrate* inst = context;
-    Submenu* submenu = inst->submenu;
+    VariableItemList* variable_list = inst->variable_list;
+    VariableItem* item;
 
-    // Add your menu items
-    submenu_add_item(
-        submenu,
-        "Transfer App > Flipper",
-        SubmenuDevMenuIndexTransferFromApp,
-        vb_migrate_scene_dev_menu_submenu_callback,
+    variable_item_list_set_enter_callback(
+        variable_list, vb_migrate_scene_dev_menu_var_list_enter_callback, inst);
+    variable_item_list_add(variable_list, "Transfer App > Flipper", 0, NULL, NULL);
+    variable_item_list_add(variable_list, "Transfer Flipper > App", 0, NULL, NULL);
+    item = variable_item_list_add(
+        variable_list,
+        "Spoof Version",
+        VbTagTypeMax - 1,
+        vb_migrate_scene_dev_menu_spoof_change_callback,
         inst);
-    if(inst->num_captured != 0) {
-        submenu_add_item(
-            submenu,
-            "Transfer Flipper > App",
-            SubmenuDevMenuIndexTransferToApp,
-            vb_migrate_scene_dev_menu_submenu_callback,
-            inst);
-        submenu_add_item(
-            submenu,
-            "Clear Captures",
-            SubmenuDevMenuIndexClearCaptures,
-            vb_migrate_scene_dev_menu_submenu_callback,
-            inst);
-    }
-    submenu_add_item(
-        submenu,
-        "Delete Vital Bracelet",
-        SubmenuDevMenuIndexDeleteVb,
-        vb_migrate_scene_dev_menu_submenu_callback,
-        inst);
+    variable_item_set_current_value_index(item, inst->override_type - 1);
+    variable_item_set_current_value_text(item, vb_tag_get_tag_type_name(inst->override_type));
 
-    view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewMenu);
+    variable_item_list_add(variable_list, "Clear Captures", 0, NULL, NULL);
+    variable_item_list_add(variable_list, "Delete Vital Bracelet", 0, NULL, NULL);
+
+    variable_item_list_set_selected_item(
+        variable_list, scene_manager_get_scene_state(inst->scene_manager, VbMigrateSceneDevMenu));
+
+    view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewVariableItemList);
 }
 
 bool vb_migrate_scene_dev_menu_on_event(void* context, SceneManagerEvent event) {
@@ -71,6 +75,10 @@ bool vb_migrate_scene_dev_menu_on_event(void* context, SceneManagerEvent event) 
     bool consumed = false;
 
     if(event.type == SceneManagerEventTypeCustom) {
+        if(event.event < SubmenuDevMenuIndexSpoofSelection) {
+            scene_manager_set_scene_state(inst->scene_manager, VbMigrateSceneDevMenu, event.event);
+        }
+
         if(event.event == SubmenuDevMenuIndexTransferFromApp) {
             scene_manager_next_scene(inst->scene_manager, VbMigrateSceneFromApp);
             consumed = true;
@@ -83,6 +91,10 @@ bool vb_migrate_scene_dev_menu_on_event(void* context, SceneManagerEvent event) 
         } else if(event.event == SubmenuDevMenuIndexDeleteVb) {
             scene_manager_next_scene(inst->scene_manager, VbMigrateSceneDelete);
             consumed = true;
+        } else if(event.event >= SubmenuDevMenuIndexSpoofSelection) {
+            // Note: skipping SubmenuDevMenuIndexSpoof because there's nothing to do on enter
+            inst->override_type = event.event - SubmenuDevMenuIndexSpoofSelection;
+            consumed = true;
         }
     }
     return consumed;
@@ -91,5 +103,5 @@ bool vb_migrate_scene_dev_menu_on_event(void* context, SceneManagerEvent event) 
 void vb_migrate_scene_dev_menu_on_exit(void* context) {
     VbMigrate* inst = context;
 
-    submenu_reset(inst->submenu);
+    variable_item_list_reset(inst->variable_list);
 }

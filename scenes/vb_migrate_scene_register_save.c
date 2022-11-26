@@ -79,6 +79,17 @@ bool vb_migrate_scene_register_save_on_event(void* context, SceneManagerEvent ev
                 vb_migrate_show_loading_popup(inst, true);
                 if(vb_migrate_save_nfc(inst, inst->text_store, VB_MIGRATE_TEMPLATE_NAME)) {
                     inst->num_captured = 0;
+
+                    BantBlock* bant = vb_tag_get_bant_block(&inst->nfc_dev->dev_data);
+                    const VbTagProduct* product = vb_tag_find_product(bant);
+                    inst->orig_product = product;
+                    if(product) {
+                        inst->orig_type = product->type;
+                    } else {
+                        inst->orig_type = VbTagTypeUnknown;
+                    }
+                    inst->override_type = inst->orig_type;
+
                     // Go to success
                     scene_manager_next_scene(inst->scene_manager, VbMigrateSceneSaveSuccess);
                 } else {

@@ -29,6 +29,7 @@
 // #include <gui/modules/dialog_ex.h>
 #include "gui/modules/file_select.h"
 #include <gui/modules/loading.h>
+#include <gui/modules/variable_item_list.h>
 
 #include <notification/notification.h>
 #include <dialogs/dialogs.h>
@@ -37,6 +38,7 @@
 
 #include "vb_migrate.h"
 #include "scenes/vb_migrate_scene.h"
+#include "vb_tag.h"
 
 #define VB_MIGRATE_TEMPLATE_NAME "template" NFC_APP_EXTENSION
 #define VB_MIGRATE_CAPTURE_FORMAT "%03d%s"
@@ -57,6 +59,7 @@ struct VbMigrate {
     FileSelect* file_select;
     TextInput* text_input;
     Loading* loading;
+    VariableItemList* variable_list;
     NfcWorker* worker;
     NfcDevice* nfc_dev;
     char text_store[128];
@@ -65,6 +68,9 @@ struct VbMigrate {
     int num_captured;
     int next_id;
     int num_sent;
+    VbTagType orig_type;
+    VbTagType override_type;
+    const VbTagProduct* orig_product;
 };
 
 typedef enum {
@@ -75,6 +81,7 @@ typedef enum {
     // VbMigrateViewDialogEx,
     VbMigrateViewFileSelect,
     VbMigrateViewLoading,
+    VbMigrateViewVariableItemList,
 } VbMigrateView;
 
 void vb_migrate_blink_read(VbMigrate* inst);

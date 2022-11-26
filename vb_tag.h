@@ -36,11 +36,21 @@ typedef struct {
     uint8_t padding[3];
 } __attribute__((packed)) BantBlock;
 
+typedef enum {
+    VbTagTypeUnknown,
+    VbTagTypeVBDM,
+    VbTagTypeVBV,
+    VbTagTypeVBC,
+    VbTagTypeVH,
+    VbTagTypeMax
+} VbTagType;
+
 typedef struct {
     uint16_t item_id;
     uint16_t item_no;
     const char* name;
     const char* short_name;
+    VbTagType type;
 } VbTagProduct;
 
 typedef enum {
@@ -65,3 +75,6 @@ VbTagStatus vb_tag_get_status(const BantBlock* bant);
 void vb_tag_set_status(BantBlock* bant, VbTagStatus status);
 VbTagOperation vb_tag_get_operation(const BantBlock* bant);
 void vb_tag_set_operation(BantBlock* bant, VbTagOperation operation);
+const VbTagProduct* vb_tag_get_default_product(VbTagType type);
+void vb_tag_set_item_id_no(BantBlock* bant, const VbTagProduct* product);
+const char* vb_tag_get_tag_type_name(VbTagType type);

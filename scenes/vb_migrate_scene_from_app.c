@@ -79,6 +79,11 @@ static void vb_migrate_scene_from_app_set_nfc_state(VbMigrate* inst, FromAppStat
         vb_tag_set_status(bant, 0);
         vb_tag_set_operation(bant, VbTagOperationIdle);
     }
+
+    // Override tag type
+    if(inst->override_type != inst->orig_type && inst->override_type != VbTagTypeUnknown) {
+        vb_tag_set_item_id_no(bant, vb_tag_get_default_product(inst->override_type));
+    }
 }
 
 static bool vb_migrate_scene_from_app_is_state_changed(VbMigrate* inst, FromAppState state) {
@@ -236,6 +241,12 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
             vb_migrate_blink_stop(inst);
             vb_migrate_scene_from_app_set_nfc_state(inst, state);
             notification_message(inst->notifications, &sequence_success);
+
+            // Restore original tag type if necessary
+            if(inst->override_type != inst->orig_type && inst->override_type != VbTagTypeUnknown) {
+                BantBlock* bant = vb_tag_get_bant_block(&inst->nfc_dev->dev_data);
+                vb_tag_set_item_id_no(bant, inst->orig_product);
+            }
 
             // Save the tag
             inst->next_id = vb_migrate_get_next_id(inst, inst->text_store, inst->next_id, false);

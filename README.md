@@ -58,6 +58,14 @@ loading, you will see information about this Vital Bracelet:
 
 Press the right key to see a menu of options you can use with the registered VB.
 
+### Spoof Version
+
+Vital Bracelet Arena splits Vital Bracelet and Vital Hero Digimon into
+mutually-exclusive categories, and currently transferring VBM characters from
+VBDM has not been tested, so if you want to transfer between categories, you
+can select the Vital Bracelet version to spoof to change the VB type and force
+the app to perform transfers between categories.
+
 ### 3. Transfer App > Flipper
 
 Use this mode to transfer characters from VB Lab to Flipper.

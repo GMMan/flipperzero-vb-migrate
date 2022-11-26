@@ -39,12 +39,10 @@ void vb_migrate_scene_info_on_enter(void* context) {
     furi_string_cat_printf(temp_str, "\ec%s\n", inst->text_store);
 
     // Type
-    BantBlock* bant = vb_tag_get_bant_block(&inst->nfc_dev->dev_data);
-    const VbTagProduct* product = vb_tag_find_product(bant);
-    if(product == NULL)
+    if(inst->orig_product == NULL)
         furi_string_cat(temp_str, "Unknown product\n");
     else
-        furi_string_cat_printf(temp_str, "\e#%s\n", product->name);
+        furi_string_cat_printf(temp_str, "\e#%s\n", inst->orig_product->name);
 
     // Number of mons loaded
     furi_string_cat_printf(temp_str, "Charas. captured: %d", inst->num_captured);
@@ -64,6 +62,8 @@ bool vb_migrate_scene_info_on_event(void* context, SceneManagerEvent event) {
 
     if(event.type == SceneManagerEventTypeCustom) {
         if(event.event == GuiButtonTypeRight) {
+            // Reset menu selection index
+            scene_manager_set_scene_state(inst->scene_manager, VbMigrateSceneDevMenu, 0);
             scene_manager_next_scene(inst->scene_manager, VbMigrateSceneDevMenu);
             consumed = true;
         }

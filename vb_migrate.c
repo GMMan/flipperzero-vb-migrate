@@ -238,6 +238,13 @@ VbMigrate* vb_migrate_alloc() {
     view_dispatcher_add_view(
         inst->view_dispatcher, VbMigrateViewLoading, loading_get_view(inst->loading));
 
+    // Variable item list
+    inst->variable_list = variable_item_list_alloc();
+    view_dispatcher_add_view(
+        inst->view_dispatcher,
+        VbMigrateViewVariableItemList,
+        variable_item_list_get_view(inst->variable_list));
+
     // Dialog ex
     // inst->dialog_ex = dialog_ex_alloc();
     // view_dispatcher_add_view(
@@ -250,6 +257,10 @@ void vb_migrate_free(VbMigrate* inst) {
     // Dialog ex
     // view_dispatcher_remove_view(inst->view_dispatcher, VbMigrateViewDialogEx);
     // dialog_ex_free(inst->dialog_ex);
+
+    // Variable item list
+    view_dispatcher_remove_view(inst->view_dispatcher, VbMigrateViewVariableItemList);
+    variable_item_list_free(inst->variable_list);
 
     // Loading
     view_dispatcher_remove_view(inst->view_dispatcher, VbMigrateViewLoading);

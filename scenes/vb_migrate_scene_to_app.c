@@ -71,6 +71,11 @@ static void vb_migrate_scene_to_app_set_nfc_state(VbMigrate* inst, ToAppState st
         vb_tag_set_status(bant, VbTagStatusReady);
         vb_tag_set_operation(bant, VbTagOperationReady);
     }
+
+    // Override tag type
+    if(inst->override_type != inst->orig_type && inst->override_type != VbTagTypeUnknown) {
+        vb_tag_set_item_id_no(bant, vb_tag_get_default_product(inst->override_type));
+    }
 }
 
 static bool vb_migrate_scene_to_app_is_state_changed(VbMigrate* inst, ToAppState state) {
