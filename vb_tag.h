@@ -78,3 +78,5 @@ void vb_tag_set_operation(BantBlock* bant, VbTagOperation operation);
 const VbTagProduct* vb_tag_get_default_product(VbTagType type);
 void vb_tag_set_item_id_no(BantBlock* bant, const VbTagProduct* product);
 const char* vb_tag_get_tag_type_name(VbTagType type);
+bool vb_tag_get_app_flag(const BantBlock* bant);
+void vb_tag_set_app_flag(BantBlock* bant, bool value);

@@ -76,6 +76,10 @@ static void vb_migrate_scene_to_app_set_nfc_state(VbMigrate* inst, ToAppState st
     if(inst->override_type != inst->orig_type && inst->override_type != VbTagTypeUnknown) {
         vb_tag_set_item_id_no(bant, vb_tag_get_default_product(inst->override_type));
     }
+
+    if(inst->clear_account_id) {
+        vb_tag_set_app_flag(bant, false);
+    }
 }
 
 static bool vb_migrate_scene_to_app_is_state_changed(VbMigrate* inst, ToAppState state) {

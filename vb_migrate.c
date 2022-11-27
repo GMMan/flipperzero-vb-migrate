@@ -192,6 +192,8 @@ VbMigrate* vb_migrate_alloc() {
     view_dispatcher_set_navigation_event_callback(
         inst->view_dispatcher, vb_migrate_back_event_callback);
 
+    inst->clear_account_id = false;
+
     // GUI
     inst->gui = furi_record_open(RECORD_GUI);
 

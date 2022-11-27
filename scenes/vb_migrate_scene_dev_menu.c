@@ -22,8 +22,13 @@ typedef enum {
     SubmenuDevMenuIndexTransferFromApp,
     SubmenuDevMenuIndexTransferToApp,
     SubmenuDevMenuIndexSpoof,
+    SubmenuDevMenuClearAccountId,
     SubmenuDevMenuIndexClearCaptures,
     SubmenuDevMenuIndexDeleteVb,
+    // -----
+    SubmenuDevMenuClearAccountIdOff,
+    SubmenuDevMenuClearAccountIdOn,
+    // -----
     SubmenuDevMenuIndexSpoofSelection, // Always keep this last because we add tag type to it
 } SubmenuDevMenuIndex;
 
@@ -43,6 +48,16 @@ static void vb_migrate_scene_dev_menu_spoof_change_callback(VariableItem* item) 
         inst->view_dispatcher, SubmenuDevMenuIndexSpoofSelection + tag_type);
 }
 
+static void vb_migrate_scene_dev_menu_clear_account_id_change_callback(VariableItem* item) {
+    VbMigrate* inst = variable_item_get_context(item);
+    uint8_t index = variable_item_get_current_value_index(item);
+
+    variable_item_set_current_value_text(item, index ? "On" : "Off");
+    view_dispatcher_send_custom_event(
+        inst->view_dispatcher,
+        index ? SubmenuDevMenuClearAccountIdOn : SubmenuDevMenuClearAccountIdOff);
+}
+
 void vb_migrate_scene_dev_menu_on_enter(void* context) {
     VbMigrate* inst = context;
     VariableItemList* variable_list = inst->variable_list;
@@ -52,6 +67,7 @@ void vb_migrate_scene_dev_menu_on_enter(void* context) {
         variable_list, vb_migrate_scene_dev_menu_var_list_enter_callback, inst);
     variable_item_list_add(variable_list, "Transfer App > Flipper", 0, NULL, NULL);
     variable_item_list_add(variable_list, "Transfer Flipper > App", 0, NULL, NULL);
+
     item = variable_item_list_add(
         variable_list,
         "Spoof Version",
@@ -60,6 +76,15 @@ void vb_migrate_scene_dev_menu_on_enter(void* context) {
         inst);
     variable_item_set_current_value_index(item, inst->override_type - 1);
     variable_item_set_current_value_text(item, vb_tag_get_tag_type_name(inst->override_type));
+
+    item = variable_item_list_add(
+        variable_list,
+        "Unlink Account",
+        2,
+        vb_migrate_scene_dev_menu_clear_account_id_change_callback,
+        inst);
+    variable_item_set_current_value_index(item, inst->clear_account_id ? 1 : 0);
+    variable_item_set_current_value_text(item, inst->clear_account_id ? "On" : "Off");
 
     variable_item_list_add(variable_list, "Clear Captures", 0, NULL, NULL);
     variable_item_list_add(variable_list, "Delete Vital Bracelet", 0, NULL, NULL);
@@ -90,6 +115,12 @@ bool vb_migrate_scene_dev_menu_on_event(void* context, SceneManagerEvent event) 
             consumed = true;
         } else if(event.event == SubmenuDevMenuIndexDeleteVb) {
             scene_manager_next_scene(inst->scene_manager, VbMigrateSceneDelete);
+            consumed = true;
+        } else if(event.event == SubmenuDevMenuClearAccountIdOff) {
+            inst->clear_account_id = false;
+            consumed = true;
+        } else if(event.event == SubmenuDevMenuClearAccountIdOn) {
+            inst->clear_account_id = true;
             consumed = true;
         } else if(event.event >= SubmenuDevMenuIndexSpoofSelection) {
             // Note: skipping SubmenuDevMenuIndexSpoof because there's nothing to do on enter

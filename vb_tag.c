@@ -142,3 +142,11 @@ const char* vb_tag_get_tag_type_name(VbTagType type) {
         return NULL;
     }
 }
+
+bool vb_tag_get_app_flag(const BantBlock* bant) {
+    return bant->app_flag == 1;
+}
+
+void vb_tag_set_app_flag(BantBlock* bant, bool value) {
+    bant->app_flag = value ? 1 : 0xff;
+}

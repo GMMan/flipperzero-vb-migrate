@@ -65,6 +65,7 @@ struct VbMigrate {
     char text_store[128];
     uint8_t captured_pwd[4];
     uint8_t captured_uid[7];
+    bool clear_account_id;
     int num_captured;
     int next_id;
     int num_sent;

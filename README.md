@@ -69,6 +69,15 @@ the app to perform transfers between categories.
 Note that spoofing a Vital Bracelet Characters from a non-VBC registration and
 vice versa will not work because different encryption keys are used.
 
+### Unlink Account
+
+This option unsets the account flag in the NFC data when you transfer to app so
+the character is not bound to any particular account, and you can transfer it
+to a different Vital Bracelet that is using a different account when using VB
+Arena. Note that VB Lab may still complain because it also uses character ID
+embedded in character data to check whether the character belongs to the current
+account.
+
 ### 3. Transfer App > Flipper
 
 Use this mode to transfer characters from VB Lab to Flipper.

@@ -23,7 +23,7 @@ App(
     entry_point="vb_migrate_app",
     requires=["gui", "storage"],
     stack_size=2 * 1024,
-    fap_version=(0,2),
+    fap_version=(0,3),
     fap_libs=["nfc", "misc", "mbedtls", "ST25RFAL002", "gcc", "toolbox"],
     fap_category="Tools",
     fap_description="Makes transferring characters with VB Lab less cumbersome",
