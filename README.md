@@ -66,6 +66,9 @@ VBDM has not been tested, so if you want to transfer between categories, you
 can select the Vital Bracelet version to spoof to change the VB type and force
 the app to perform transfers between categories.
 
+Note that spoofing a Vital Bracelet Characters from a non-VBC registration and
+vice versa will not work because different encryption keys are used.
+
 ### 3. Transfer App > Flipper
 
 Use this mode to transfer characters from VB Lab to Flipper.
