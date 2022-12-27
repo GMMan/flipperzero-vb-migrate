@@ -166,6 +166,8 @@ const VbTagProduct* vb_tag_get_default_product(VbTagType type) {
         return &vb_tag_valid_products[6];
     case VbTagTypeVH:
         return &vb_tag_valid_products[5];
+    case VbTagTypeVBBE:
+        return &vb_tag_valid_products[7];
 
     default:
         return NULL;
