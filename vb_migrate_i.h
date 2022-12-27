@@ -29,7 +29,7 @@
 // #include <gui/modules/dialog_ex.h>
 #include "gui/modules/file_select.h"
 #include <gui/modules/loading.h>
-#include <gui/modules/variable_item_list.h>
+#include "gui/modules/variable_item_list_ex.h"
 
 #include <notification/notification.h>
 #include <dialogs/dialogs.h>
@@ -59,7 +59,7 @@ struct VbMigrate {
     FileSelect* file_select;
     TextInput* text_input;
     Loading* loading;
-    VariableItemList* variable_list;
+    VariableItemListEx* variable_list;
     NfcWorker* worker;
     NfcDevice* nfc_dev;
     char text_store[128];

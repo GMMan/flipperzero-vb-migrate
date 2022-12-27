@@ -38,21 +38,48 @@ static void vb_migrate_scene_dev_menu_var_list_enter_callback(void* context, uin
     view_dispatcher_send_custom_event(inst->view_dispatcher, index);
 }
 
-static void vb_migrate_scene_dev_menu_spoof_change_callback(VariableItem* item) {
-    VbMigrate* inst = variable_item_get_context(item);
-    uint8_t index = variable_item_get_current_value_index(item);
+static VbTagType
+    vb_migrate_scene_dev_menu_spoof_set_item_by_index(VariableItemEx* item, uint8_t index) {
+    VbTagType type;
+    if(index >= 2) { // VBC
+        type = (VbTagType)(index + 2);
+    } else {
+        type = (VbTagType)(index + 1);
+    }
 
-    VbTagType tag_type = index + 1;
-    variable_item_set_current_value_text(item, vb_tag_get_tag_type_name(tag_type));
+    variable_item_ex_set_current_value_index(item, index);
+    variable_item_ex_set_current_value_text(item, vb_tag_get_tag_type_name(type));
+    return type;
+}
+
+static uint8_t
+    vb_migrate_scene_dev_menu_spoof_set_item_by_type(VariableItemEx* item, VbTagType type) {
+    uint8_t index;
+    if(type >= VbTagTypeVH) {
+        index = (uint8_t)type - 2;
+    } else {
+        index = (uint8_t)type - 1;
+    }
+
+    variable_item_ex_set_current_value_index(item, index);
+    variable_item_ex_set_current_value_text(item, vb_tag_get_tag_type_name(type));
+    return index;
+}
+
+static void vb_migrate_scene_dev_menu_spoof_change_callback(VariableItemEx* item) {
+    VbMigrate* inst = variable_item_ex_get_context(item);
+    uint8_t index = variable_item_ex_get_current_value_index(item);
+
+    VbTagType tag_type = vb_migrate_scene_dev_menu_spoof_set_item_by_index(item, index);
     view_dispatcher_send_custom_event(
         inst->view_dispatcher, SubmenuDevMenuIndexSpoofSelection + tag_type);
 }
 
-static void vb_migrate_scene_dev_menu_clear_account_id_change_callback(VariableItem* item) {
-    VbMigrate* inst = variable_item_get_context(item);
-    uint8_t index = variable_item_get_current_value_index(item);
+static void vb_migrate_scene_dev_menu_clear_account_id_change_callback(VariableItemEx* item) {
+    VbMigrate* inst = variable_item_ex_get_context(item);
+    uint8_t index = variable_item_ex_get_current_value_index(item);
 
-    variable_item_set_current_value_text(item, index ? "On" : "Off");
+    variable_item_ex_set_current_value_text(item, index ? "On" : "Off");
     view_dispatcher_send_custom_event(
         inst->view_dispatcher,
         index ? SubmenuDevMenuClearAccountIdOn : SubmenuDevMenuClearAccountIdOff);
@@ -60,36 +87,55 @@ static void vb_migrate_scene_dev_menu_clear_account_id_change_callback(VariableI
 
 void vb_migrate_scene_dev_menu_on_enter(void* context) {
     VbMigrate* inst = context;
-    VariableItemList* variable_list = inst->variable_list;
-    VariableItem* item;
+    VariableItemListEx* variable_list = inst->variable_list;
+    VariableItemEx* item;
 
-    variable_item_list_set_enter_callback(
+    variable_item_list_ex_set_enter_callback(
         variable_list, vb_migrate_scene_dev_menu_var_list_enter_callback, inst);
-    variable_item_list_add(variable_list, "Transfer App > Flipper", 0, NULL, NULL);
-    variable_item_list_add(variable_list, "Transfer Flipper > App", 0, NULL, NULL);
+    variable_item_list_ex_add(
+        variable_list, "Transfer App > Flipper", 0, NULL, NULL, SubmenuDevMenuIndexTransferFromApp);
 
-    item = variable_item_list_add(
-        variable_list,
-        "Spoof Version",
-        VbTagTypeMax - 1,
-        vb_migrate_scene_dev_menu_spoof_change_callback,
-        inst);
-    variable_item_set_current_value_index(item, inst->override_type - 1);
-    variable_item_set_current_value_text(item, vb_tag_get_tag_type_name(inst->override_type));
+    if(inst->num_captured != 0) {
+        variable_item_list_ex_add(
+            variable_list,
+            "Transfer Flipper > App",
+            0,
+            NULL,
+            NULL,
+            SubmenuDevMenuIndexTransferToApp);
+    }
 
-    item = variable_item_list_add(
+    item = variable_item_list_ex_add(
         variable_list,
         "Unlink Account",
         2,
         vb_migrate_scene_dev_menu_clear_account_id_change_callback,
-        inst);
-    variable_item_set_current_value_index(item, inst->clear_account_id ? 1 : 0);
-    variable_item_set_current_value_text(item, inst->clear_account_id ? "On" : "Off");
+        inst,
+        SubmenuDevMenuClearAccountId);
+    variable_item_ex_set_current_value_index(item, inst->clear_account_id ? 1 : 0);
+    variable_item_ex_set_current_value_text(item, inst->clear_account_id ? "On" : "Off");
 
-    variable_item_list_add(variable_list, "Clear Captures", 0, NULL, NULL);
-    variable_item_list_add(variable_list, "Delete Vital Bracelet", 0, NULL, NULL);
+    if(inst->orig_type == VbTagTypeVBDM || inst->orig_type == VbTagTypeVBV ||
+       inst->orig_type == VbTagTypeVH) {
+        item = variable_item_list_ex_add(
+            variable_list,
+            "Spoof Version",
+            VbTagTypeMax - 1 - 1, // Removing VBC from list
+            vb_migrate_scene_dev_menu_spoof_change_callback,
+            inst,
+            SubmenuDevMenuIndexSpoof);
+        vb_migrate_scene_dev_menu_spoof_set_item_by_type(item, inst->override_type);
+    }
 
-    variable_item_list_set_selected_item(
+    if(inst->num_captured != 0) {
+        variable_item_list_ex_add(
+            variable_list, "Clear Captures", 0, NULL, NULL, SubmenuDevMenuIndexClearCaptures);
+    }
+
+    variable_item_list_ex_add(
+        variable_list, "Delete Vital Bracelet", 0, NULL, NULL, SubmenuDevMenuIndexDeleteVb);
+
+    variable_item_list_ex_set_selected_item(
         variable_list, scene_manager_get_scene_state(inst->scene_manager, VbMigrateSceneDevMenu));
 
     view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewVariableItemList);
@@ -134,5 +180,5 @@ bool vb_migrate_scene_dev_menu_on_event(void* context, SceneManagerEvent event) 
 void vb_migrate_scene_dev_menu_on_exit(void* context) {
     VbMigrate* inst = context;
 
-    variable_item_list_reset(inst->variable_list);
+    variable_item_list_ex_reset(inst->variable_list);
 }
