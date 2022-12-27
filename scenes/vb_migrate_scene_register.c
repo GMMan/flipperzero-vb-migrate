@@ -131,7 +131,7 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
                 AlignLeft,
                 AlignTop,
                 FontSecondary,
-                "Please make sure your current\ncharacter has been sent to\nVB Lab before continuing.");
+                "Please make sure your current\ncharacter has been sent to\nVB Lab/Arena before\ncontinuing.");
             widget_add_button_element(
                 widget,
                 GuiButtonTypeLeft,
@@ -148,18 +148,23 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
         } else if(state == RegisterStateInstructionConnect) {
             widget_reset(widget);
-            widget_add_string_multiline_element(
+            widget_add_text_scroll_element(
                 widget,
                 0,
                 0,
-                AlignLeft,
-                AlignTop,
-                FontSecondary,
+                128,
+                45,
                 "Prepare VB Lab:\n"
                 "1. Ensure current character in\n"
-                "VB Lab has been put in storage\n"
+                "VB Lab has been put in\n"
+                "storage\n"
                 "2. Open the \"Scan\" screen\n"
-                "3. Tap \"Vital Bracelet -> App\"");
+                "3. Tap \"Vital Bracelet -> App\"\n"
+                "\n"
+                "Prepare VB Arena:\n"
+                "1. Select the device type that\n"
+                "matches your VB\n"
+                "2. Tap the \"Send\" button");
             widget_add_button_element(
                 widget,
                 GuiButtonTypeLeft,
@@ -230,7 +235,7 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
                 AlignCenter,
                 AlignCenter,
                 FontPrimary,
-                "Tap \"Send\" on\nVB Lab, then tap\nto Flipper");
+                "Start transfer on\nVB Lab/Arena,\nthen tap to Flipper");
             widget_add_icon_element(widget, 7, 18, &I_Touch_26x26);
             widget_add_button_element(
                 widget,

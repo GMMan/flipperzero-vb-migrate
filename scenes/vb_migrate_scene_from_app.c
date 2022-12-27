@@ -119,8 +119,11 @@ static void vb_migrate_scene_from_app_set_state(VbMigrate* inst, FromAppState st
                 45,
                 "\e#To transfer characters\n"
                 "\e#to Flipper:\n"
-                "1. Wake up character from\n"
-                "storage\n"
+                "0. If on VB Arena, select\n"
+                "the device type that matches\n"
+                "your current settings\n"
+                "1. If on VB Lab, wake up\n"
+                "character from storage\n"
                 "2. Sync character to Flipper\n"
                 "as if it was a Vital Bracelet.\n"
                 "Flipper will beep when it is\n"
