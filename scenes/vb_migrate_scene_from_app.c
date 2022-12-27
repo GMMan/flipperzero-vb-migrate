@@ -70,6 +70,7 @@ static bool vb_migrate_scene_from_app_worker_callback(NfcWorkerEvent event, void
 static void vb_migrate_scene_from_app_set_nfc_state(VbMigrate* inst, FromAppState state) {
     BantBlock* bant = vb_tag_get_bant_block(&inst->nfc_dev->dev_data);
     if(state == FromAppStateEmulateReady) {
+        vb_tag_set_random_nonce(bant);
         vb_tag_set_status(bant, VbTagStatusReady);
         vb_tag_set_operation(bant, VbTagOperationReady);
     } else if(state == FromAppStateEmulateCheckDim) {

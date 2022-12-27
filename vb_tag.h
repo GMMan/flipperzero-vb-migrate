@@ -23,18 +23,7 @@
 
 #define BANT_MAGIC (0x544E4142)
 
-typedef struct {
-    uint32_t magic;
-    // Note: this should be big endian, but for convenience, we'll treat them as little endian
-    uint16_t item_id;
-    uint16_t item_no;
-    uint8_t status;
-    uint8_t dim_no;
-    uint8_t operation;
-    uint8_t reserved;
-    uint8_t app_flag;
-    uint8_t padding[3];
-} __attribute__((packed)) BantBlock;
+typedef struct BantBlock BantBlock;
 
 typedef enum {
     VbTagTypeUnknown,
@@ -42,6 +31,7 @@ typedef enum {
     VbTagTypeVBV,
     VbTagTypeVBC,
     VbTagTypeVH,
+    VbTagTypeVBBE,
     VbTagTypeMax
 } VbTagType;
 
@@ -56,6 +46,7 @@ typedef struct {
 typedef enum {
     VbTagStatusReady = 1 << 0,
     VbTagStatusDimReady = 1 << 1,
+    VbTagStatusActiveIsAvatar = 1 << 2,
 } VbTagStatus;
 
 typedef enum {
@@ -80,3 +71,7 @@ void vb_tag_set_item_id_no(BantBlock* bant, const VbTagProduct* product);
 const char* vb_tag_get_tag_type_name(VbTagType type);
 bool vb_tag_get_app_flag(const BantBlock* bant);
 void vb_tag_set_app_flag(BantBlock* bant, bool value);
+bool vb_tag_is_vbbe(const BantBlock* bant);
+uint32_t vb_tag_get_nonce(const BantBlock* bant);
+void vb_tag_set_nonce(BantBlock* bant, uint32_t value);
+void vb_tag_set_random_nonce(BantBlock* bant);

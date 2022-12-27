@@ -16,17 +16,51 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <stdlib.h>
 #include "vb_tag.h"
 
 #define VB_NAME_VBDM "VB Digital Monster"
 #define VB_NAME_VBV "VB Digivice -V-"
 #define VB_NAME_VBC "VB Characters"
 #define VB_NAME_VH "Vital Hero"
+#define VB_NAME_VBBE "Vital Bracelet BE"
 
 #define VB_NAME_VBDM_SHORT "VBDM"
 #define VB_NAME_VBV_SHORT "VBV"
 #define VB_NAME_VBC_SHORT "VBC"
 #define VB_NAME_VH_SHORT "VH"
+#define VB_NAME_VBBE_SHORT "VBBE"
+
+struct BantBlockCommon {
+    uint32_t magic;
+    // Note: this should be big endian, but for convenience, we'll treat them as little endian
+    uint16_t item_id;
+    uint16_t item_no;
+    uint8_t status;
+} __attribute__((packed));
+
+struct BantBlockVb {
+    uint8_t dim_no;
+    uint8_t operation;
+    uint8_t reserved;
+    uint8_t app_flag;
+    uint8_t padding[3];
+} __attribute__((packed));
+
+struct BantBlockBe {
+    uint8_t operation;
+    uint16_t dim_no;
+    uint8_t app_flag;
+    uint8_t nonce[3];
+} __attribute__((packed));
+
+struct BantBlock {
+    struct BantBlockCommon common;
+    union {
+        struct BantBlockVb vb;
+        struct BantBlockBe be;
+    };
+} __attribute__((packed));
 
 static const VbTagProduct vb_tag_valid_products[] = {
     {.item_id = 0x0200,
@@ -64,6 +98,11 @@ static const VbTagProduct vb_tag_valid_products[] = {
      .name = VB_NAME_VBC,
      .short_name = VB_NAME_VBC_SHORT,
      .type = VbTagTypeVBC},
+    {.item_id = 0x0400,
+     .item_no = 0x0100,
+     .name = VB_NAME_VBBE,
+     .short_name = VB_NAME_VBBE_SHORT,
+     .type = VbTagTypeVBBE},
 };
 
 static const char* vb_tag_type_names[] = {
@@ -72,6 +111,7 @@ static const char* vb_tag_type_names[] = {
     VB_NAME_VBV_SHORT,
     VB_NAME_VBC_SHORT,
     VB_NAME_VH_SHORT,
+    VB_NAME_VBBE_SHORT,
 };
 
 BantBlock* vb_tag_get_bant_block(NfcDeviceData* dev) {
@@ -81,7 +121,8 @@ BantBlock* vb_tag_get_bant_block(NfcDeviceData* dev) {
 const VbTagProduct* vb_tag_find_product(const BantBlock* bant) {
     for(size_t i = 0; i < COUNT_OF(vb_tag_valid_products); ++i) {
         const VbTagProduct* product = &vb_tag_valid_products[i];
-        if(bant->item_id == product->item_id && bant->item_no == product->item_no) return product;
+        if(bant->common.item_id == product->item_id && bant->common.item_no == product->item_no)
+            return product;
     }
 
     return NULL;
@@ -93,24 +134,25 @@ bool vb_tag_validate_product(NfcDeviceData* dev) {
     if(dev->mf_ul_data.type != MfUltralightTypeNTAGI2CPlus1K) return false;
     // Must match one of the known product IDs
     BantBlock* bant = vb_tag_get_bant_block(dev);
-    if(bant->magic != BANT_MAGIC) return false;
+    if(bant->common.magic != BANT_MAGIC) return false;
     return vb_tag_find_product(bant) != NULL;
 }
 
 VbTagStatus vb_tag_get_status(const BantBlock* bant) {
-    return bant->status;
+    return bant->common.status;
 }
 
 void vb_tag_set_status(BantBlock* bant, VbTagStatus status) {
-    bant->status = status;
+    bant->common.status = status;
 }
 
 VbTagOperation vb_tag_get_operation(const BantBlock* bant) {
-    return bant->operation;
+    return vb_tag_is_vbbe(bant) ? bant->be.operation : bant->vb.operation;
 }
 
 void vb_tag_set_operation(BantBlock* bant, VbTagOperation operation) {
-    bant->operation = operation;
+    uint8_t* p_op = vb_tag_is_vbbe(bant) ? &bant->be.operation : &bant->vb.operation;
+    *p_op = operation;
 }
 
 const VbTagProduct* vb_tag_get_default_product(VbTagType type) {
@@ -131,8 +173,8 @@ const VbTagProduct* vb_tag_get_default_product(VbTagType type) {
 }
 
 void vb_tag_set_item_id_no(BantBlock* bant, const VbTagProduct* product) {
-    bant->item_id = product->item_id;
-    bant->item_no = product->item_no;
+    bant->common.item_id = product->item_id;
+    bant->common.item_no = product->item_no;
 }
 
 const char* vb_tag_get_tag_type_name(VbTagType type) {
@@ -144,9 +186,48 @@ const char* vb_tag_get_tag_type_name(VbTagType type) {
 }
 
 bool vb_tag_get_app_flag(const BantBlock* bant) {
-    return bant->app_flag == 1;
+    uint8_t app_flag = vb_tag_is_vbbe(bant) ? bant->be.app_flag : bant->vb.app_flag;
+    return app_flag == 1;
 }
 
 void vb_tag_set_app_flag(BantBlock* bant, bool value) {
-    bant->app_flag = value ? 1 : 0xff;
+    uint8_t* app_flag = vb_tag_is_vbbe(bant) ? &bant->be.app_flag : &bant->vb.app_flag;
+    *app_flag = value ? 1 : 0xff;
+}
+
+// Lookup is expensive, let's check tag ID directly
+bool vb_tag_is_vbbe(const BantBlock* bant) {
+    return bant->common.item_id == 0x0400;
+}
+
+uint32_t vb_tag_get_nonce(const BantBlock* bant) {
+    if(vb_tag_is_vbbe(bant)) {
+        return (bant->be.nonce[0] << 16) | (bant->be.nonce[1] << 8) | bant->be.nonce[2];
+    } else {
+        return 0;
+    }
+}
+
+void vb_tag_set_nonce(BantBlock* bant, uint32_t value) {
+    if(vb_tag_is_vbbe(bant)) {
+        uint8_t* nonce = bant->be.nonce;
+        nonce[0] = value >> 16;
+        nonce[1] = value >> 8;
+        nonce[2] = value;
+    }
+}
+
+void vb_tag_set_random_nonce(BantBlock* bant) {
+    if(vb_tag_is_vbbe(bant)) {
+        uint32_t orig_nonce = vb_tag_get_nonce(bant);
+        uint32_t new_nonce;
+        do {
+            new_nonce = rand() & 0xffffff;
+            // Original nonce is generated as ((rand() % 0xffff) << 8) | (rand() % 0xff),
+            // so don't inclue 0xffff** and 0x****ff as valid values
+            if((new_nonce & 0xff) == 0xff) --new_nonce;
+            if(new_nonce >= 0xffff00) new_nonce -= 0x100;
+        } while(new_nonce == 0 || new_nonce == orig_nonce);
+        vb_tag_set_nonce(bant, new_nonce);
+    }
 }

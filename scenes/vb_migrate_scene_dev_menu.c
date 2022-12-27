@@ -120,7 +120,7 @@ void vb_migrate_scene_dev_menu_on_enter(void* context) {
         item = variable_item_list_ex_add(
             variable_list,
             "Spoof Version",
-            VbTagTypeMax - 1 - 1, // Removing VBC from list
+            VbTagTypeMax - 1 - 2, // Removing VBC from list, skip VBBE
             vb_migrate_scene_dev_menu_spoof_change_callback,
             inst,
             SubmenuDevMenuIndexSpoof);
