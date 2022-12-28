@@ -17,33 +17,39 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "../vb_migrate_i.h"
-#include "vb_migrate_icons.h"
 
-static void vb_migrate_scene_delete_success_popup_callback(void* context) {
+static void vb_migrate_scene_delete_success_widget_callback(
+    GuiButtonType result,
+    InputType type,
+    void* context) {
     VbMigrate* inst = context;
-    view_dispatcher_send_custom_event(inst->view_dispatcher, 0);
+    if(type == InputTypeShort) {
+        if(result == GuiButtonTypeRight)
+
+            view_dispatcher_send_custom_event(inst->view_dispatcher, 0);
+    }
 }
 
 void vb_migrate_scene_delete_success_on_enter(void* context) {
     VbMigrate* inst = context;
 
     // Perform your setup here
-    Popup* popup = inst->popup;
-    popup_set_icon(popup, 0, 2, &I_DolphinMafia_115x62);
-    popup_set_header(popup, "Deleted", 83, 19, AlignLeft, AlignBottom);
-    popup_set_timeout(popup, 1500);
-    popup_set_context(popup, inst);
-    popup_set_callback(popup, vb_migrate_scene_delete_success_popup_callback);
-    popup_enable_timeout(popup);
+    Widget* widget = inst->widget;
+    vb_migrate_add_bg(widget, VbMigrateBgTypeRightButton);
+    widget_add_icon_element(widget, 11, 18, &I_Delete_32x20);
+    widget_add_icon_element(widget, 48, 18, &I_TextDeleted_46x6);
+    widget_add_icon_element(widget, 9, 41, &I_PulsemonRightSad_15x15);
+    widget_add_button_element(
+        widget, GuiButtonTypeRight, "OK", vb_migrate_scene_delete_success_widget_callback, inst);
 
-    view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewPopup);
+    view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
 }
 
 bool vb_migrate_scene_delete_success_on_event(void* context, SceneManagerEvent event) {
     VbMigrate* inst = context;
     bool consumed = false;
 
-    if(event.type == SceneManagerEventTypeCustom) {
+    if(event.type == SceneManagerEventTypeCustom || event.type == SceneManagerEventTypeBack) {
         uint32_t back_scenes[] = {VbMigrateSceneSelect, VbMigrateSceneMainMenu};
         consumed = scene_manager_search_and_switch_to_previous_scene_one_of(
             inst->scene_manager, back_scenes, COUNT_OF(back_scenes));
@@ -55,5 +61,5 @@ void vb_migrate_scene_delete_success_on_exit(void* context) {
     VbMigrate* inst = context;
 
     // Perform your cleanup here
-    popup_reset(inst->popup);
+    widget_reset(inst->widget);
 }

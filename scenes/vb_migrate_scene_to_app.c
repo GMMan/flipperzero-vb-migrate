@@ -20,7 +20,6 @@
 
 #include "../vb_migrate_i.h"
 #include "../vb_tag.h"
-#include "vb_migrate_icons.h"
 
 #define TAG "vb_migrate_scene_to_app"
 
@@ -101,18 +100,21 @@ static void vb_migrate_scene_to_app_set_state(VbMigrate* inst, ToAppState state)
 
         if(state == ToAppStateInstructions) {
             widget_reset(widget);
+            vb_migrate_add_bg(widget, VbMigrateBgTypeLeftButton | VbMigrateBgTypeRightButton);
             widget_add_text_scroll_element(
                 widget,
-                0,
-                0,
-                128,
-                45,
-                "\e#To transfer characters\n"
-                "\e#from Flipper:\n"
+                8,
+                16,
+                113,
+                33,
+                "\e#To transfer\n"
+                "\e#characters from\n"
+                "\e#Flipper:\n"
                 "0. If on VB Arena, select\n"
-                "the device type that matches\n"
-                "your current settings and the\n"
-                "correct franchise for the\n"
+                "the device type that\n"
+                "matches your current\n"
+                "settings and the correct\n"
+                "franchise for the\n"
                 "characters you're\n"
                 "transferring\n"
                 "1. If on VB Lab, put the\n"
@@ -121,21 +123,22 @@ static void vb_migrate_scene_to_app_set_state(VbMigrate* inst, ToAppState state)
                 "2. Sync character from\n"
                 "Flipper as if it was a Vital\n"
                 "Bracelet. Flipper will beep\n"
-                "and automatically advance to\n"
-                "the next captured character\n"
-                "when VB Lab/Arena has\n"
-                "transferred the current \n"
+                "and automatically\n"
+                "advance to the next\n"
+                "captured character when\n"
+                "VB Lab/Arena has\n"
+                "transferred the current\n"
                 "character\n"
                 "\n"
                 "-> You can press the right\n"
                 "key to skip sending the\n"
                 "current character\n"
-                "3. Repeat the above until you\n"
-                "have transferred all the\n"
-                "characters you want\n"
+                "3. Repeat the above until\n"
+                "you have transferred all\n"
+                "the characters you want\n"
                 "\n"
-                "You can cancel at any time to\n"
-                "finish transferring.");
+                "You can cancel at any\n"
+                "time to finish transferring.");
             widget_add_button_element(
                 widget, GuiButtonTypeLeft, "Cancel", vb_migrate_scene_to_app_widget_callback, inst);
             widget_add_button_element(
@@ -145,18 +148,14 @@ static void vb_migrate_scene_to_app_set_state(VbMigrate* inst, ToAppState state)
         } else if(state == ToAppStateEmulateReady) {
             view_dispatcher_send_custom_event(inst->view_dispatcher, ToAppEventTypeEmulateStart);
         } else if(state == ToAppStateLoadError) {
-            FuriString* temp_str =
-                furi_string_alloc_printf("Could not load\ncapture %03d", inst->next_id);
             widget_reset(widget);
+            vb_migrate_add_bg(widget, VbMigrateBgTypeLeftButton);
+            widget_add_icon_element(widget, 11, 18, &I_WrongDevice_32x27);
+            widget_add_icon_element(widget, 48, 18, &I_TextErrLoadCapture_65x13);
+            widget_add_icon_element(widget, 104, 41, &I_PulsemonLeftWait_15x15);
+            FuriString* temp_str = furi_string_alloc_printf("%03d", inst->next_id);
             widget_add_string_multiline_element(
-                widget,
-                80,
-                31,
-                AlignCenter,
-                AlignCenter,
-                FontPrimary,
-                furi_string_get_cstr(temp_str));
-            widget_add_icon_element(widget, 15, 22, &I_Error_18x18);
+                widget, 48, 32, AlignLeft, AlignTop, FontSecondary, furi_string_get_cstr(temp_str));
             widget_add_button_element(
                 widget, GuiButtonTypeLeft, "Cancel", vb_migrate_scene_to_app_widget_callback, inst);
 
@@ -166,11 +165,12 @@ static void vb_migrate_scene_to_app_set_state(VbMigrate* inst, ToAppState state)
             notification_message(inst->notifications, &sequence_set_red_255);
         } else if(state == ToAppStateComplete) {
             widget_reset(widget);
-            widget_add_icon_element(widget, 32, 5, &I_DolphinNice_96x59);
-            widget_add_string_multiline_element(
-                widget, 28, 26, AlignCenter, AlignBottom, FontPrimary, "Transfers\ncomplete");
+            vb_migrate_add_bg(widget, VbMigrateBgTypeRightButton);
+            widget_add_icon_element(widget, 11, 18, &I_CommComplete_32x20);
+            widget_add_icon_element(widget, 48, 18, &I_TextTransfersDone_51x13);
+            widget_add_icon_element(widget, 9, 40, &I_PulsemonRightHappy_14x16);
             widget_add_button_element(
-                widget, GuiButtonTypeRight, "Done", vb_migrate_scene_to_app_widget_callback, inst);
+                widget, GuiButtonTypeRight, "OK", vb_migrate_scene_to_app_widget_callback, inst);
 
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
         } else {
@@ -202,25 +202,18 @@ static void vb_migrate_scene_to_app_load_capture(VbMigrate* inst, bool go_next) 
             Widget* widget = inst->widget;
 
             widget_reset(widget);
-            widget_add_string_multiline_element(
-                widget,
-                80,
-                20,
-                AlignCenter,
-                AlignCenter,
-                FontPrimary,
-                "Ready, waiting\nfor transfer");
-            furi_string_printf(
-                temp_str, "Progress: %d/%d", inst->num_sent + 1, inst->num_captured);
+            vb_migrate_add_bg(widget, VbMigrateBgTypeLeftButton | VbMigrateBgTypeRightButton);
+            widget_add_icon_element(widget, 11, 18, &I_AppInteract_32x27);
+            widget_add_icon_element(widget, 48, 18, &I_TextTapApp_56x27);
+            furi_string_printf(temp_str, "%d/%d", inst->num_sent + 1, inst->num_captured);
             widget_add_string_element(
                 widget,
-                63,
-                43,
-                AlignCenter,
-                AlignCenter,
+                120,
+                48,
+                AlignRight,
+                AlignBottom,
                 FontSecondary,
                 furi_string_get_cstr(temp_str));
-            widget_add_icon_element(widget, 7, 7, &I_Touch_26x26);
             widget_add_button_element(
                 widget, GuiButtonTypeLeft, "Cancel", vb_migrate_scene_to_app_widget_callback, inst);
             widget_add_button_element(

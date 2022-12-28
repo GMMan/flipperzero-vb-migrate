@@ -319,3 +319,13 @@ int32_t vb_migrate_app(void* p) {
     vb_migrate_free(inst);
     return 0;
 }
+
+void vb_migrate_add_bg(Widget* widget, VbMigrateBgType type) {
+    widget_add_icon_element(widget, 0, 0, &I_Background_128x64);
+    if(type & VbMigrateBgTypeLeftButton) {
+        widget_add_icon_element(widget, 0, 49, &I_LeftButtonBg_54x15);
+    }
+    if(type & VbMigrateBgTypeRightButton) {
+        widget_add_icon_element(widget, 74, 49, &I_RightButtonBg_54x15);
+    }
+}

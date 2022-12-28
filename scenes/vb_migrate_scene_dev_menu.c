@@ -21,8 +21,8 @@
 typedef enum {
     SubmenuDevMenuIndexTransferFromApp,
     SubmenuDevMenuIndexTransferToApp,
-    SubmenuDevMenuIndexSpoof,
     SubmenuDevMenuClearAccountId,
+    SubmenuDevMenuIndexSpoof,
     SubmenuDevMenuIndexClearCaptures,
     SubmenuDevMenuIndexDeleteVb,
     // -----
@@ -135,8 +135,8 @@ void vb_migrate_scene_dev_menu_on_enter(void* context) {
     variable_item_list_ex_add(
         variable_list, "Delete Vital Bracelet", 0, NULL, NULL, SubmenuDevMenuIndexDeleteVb);
 
-    variable_item_list_ex_set_selected_item(
-        variable_list, scene_manager_get_scene_state(inst->scene_manager, VbMigrateSceneDevMenu));
+    // variable_item_list_ex_set_selected_item(
+    //     variable_list, scene_manager_get_scene_state(inst->scene_manager, VbMigrateSceneDevMenu));
 
     view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewVariableItemList);
 }
@@ -146,9 +146,9 @@ bool vb_migrate_scene_dev_menu_on_event(void* context, SceneManagerEvent event) 
     bool consumed = false;
 
     if(event.type == SceneManagerEventTypeCustom) {
-        if(event.event < SubmenuDevMenuIndexSpoofSelection) {
-            scene_manager_set_scene_state(inst->scene_manager, VbMigrateSceneDevMenu, event.event);
-        }
+        // if(event.event < SubmenuDevMenuIndexSpoofSelection) {
+        //     scene_manager_set_scene_state(inst->scene_manager, VbMigrateSceneDevMenu, event.event);
+        // }
 
         if(event.event == SubmenuDevMenuIndexTransferFromApp) {
             scene_manager_next_scene(inst->scene_manager, VbMigrateSceneFromApp);

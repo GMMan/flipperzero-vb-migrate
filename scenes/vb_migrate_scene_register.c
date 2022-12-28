@@ -20,7 +20,6 @@
 
 #include "../vb_tag.h"
 #include "../vb_migrate_i.h"
-#include "vb_migrate_icons.h"
 
 typedef enum {
     RegisterStateInitial,
@@ -124,14 +123,18 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
 
         if(state == RegisterStateInstructionInitial) {
             widget_reset(widget);
-            widget_add_string_multiline_element(
+            vb_migrate_add_bg(widget, VbMigrateBgTypeLeftButton | VbMigrateBgTypeRightButton);
+            widget_add_text_scroll_element(
                 widget,
-                0,
-                0,
-                AlignLeft,
-                AlignTop,
-                FontSecondary,
-                "Please make sure your current\ncharacter has been sent to\nVB Lab/Arena before\ncontinuing.");
+                8,
+                16,
+                113,
+                33,
+                "Please make sure your\n"
+                "current character has\n"
+                "been sent to VB Lab/\n"
+                "Arena before\n"
+                "continuing.");
             widget_add_button_element(
                 widget,
                 GuiButtonTypeLeft,
@@ -148,22 +151,24 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
         } else if(state == RegisterStateInstructionConnect) {
             widget_reset(widget);
+            vb_migrate_add_bg(widget, VbMigrateBgTypeLeftButton | VbMigrateBgTypeRightButton);
             widget_add_text_scroll_element(
                 widget,
-                0,
-                0,
-                128,
-                45,
+                8,
+                16,
+                113,
+                33,
                 "Prepare VB Lab:\n"
-                "1. Ensure current character in\n"
-                "VB Lab has been put in\n"
-                "storage\n"
+                "1. Ensure current\n"
+                "character in VB Lab has\n"
+                "been put in storage\n"
                 "2. Open the \"Scan\" screen\n"
-                "3. Tap \"Vital Bracelet -> App\"\n"
+                "3. Tap \"Vital Bracelet ->\n"
+                "App\"\n"
                 "\n"
                 "Prepare VB Arena:\n"
-                "1. Select the device type that\n"
-                "matches your VB\n"
+                "1. Select the device type\n"
+                "that matches your VB\n"
                 "2. Tap the \"Send\" button");
             widget_add_button_element(
                 widget,
@@ -181,14 +186,11 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
         } else if(state == RegisterStateCaptureInitial) {
             widget_reset(widget);
-            widget_add_string_multiline_element(
-                widget,
-                80,
-                31,
-                AlignCenter,
-                AlignCenter,
-                FontPrimary,
-                "Tap Flipper to\nyour Vital\nBracelet");
+            vb_migrate_add_bg(widget, VbMigrateBgTypeLeftButton);
+            widget_add_icon_element(widget, 11, 25, &I_CommVB_32x20);
+            widget_add_icon_element(widget, 21, 17, &I_CommWave_12x8);
+            widget_add_icon_element(widget, 48, 18, &I_TextRegister1_71x20);
+            widget_add_icon_element(widget, 105, 40, &I_PulsemonLeftStand_14x16);
             widget_add_button_element(
                 widget,
                 GuiButtonTypeLeft,
@@ -208,15 +210,10 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
             vb_migrate_blink_read(inst);
         } else if(state == RegisterStateCaptureInvalidTag) {
             widget_reset(widget);
-            widget_add_string_multiline_element(
-                widget,
-                80,
-                31,
-                AlignCenter,
-                AlignCenter,
-                FontSecondary,
-                "Tag is not a valid\nVital Bracelet,\nplease try again");
-            widget_add_icon_element(widget, 15, 22, &I_Error_18x18);
+            vb_migrate_add_bg(widget, VbMigrateBgTypeLeftButton);
+            widget_add_icon_element(widget, 11, 18, &I_WrongDevice_32x27);
+            widget_add_icon_element(widget, 48, 18, &I_TextRegisterErrNotVb_71x20);
+            widget_add_icon_element(widget, 104, 41, &I_PulsemonLeftWait_15x15);
             widget_add_button_element(
                 widget,
                 GuiButtonTypeLeft,
@@ -228,15 +225,10 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
             notification_message(inst->notifications, &sequence_set_red_255);
         } else if(state == RegisterStateCapturePwd) {
             widget_reset(widget);
-            widget_add_string_multiline_element(
-                widget,
-                80,
-                31,
-                AlignCenter,
-                AlignCenter,
-                FontPrimary,
-                "Start transfer on\nVB Lab/Arena,\nthen tap to Flipper");
-            widget_add_icon_element(widget, 7, 18, &I_Touch_26x26);
+            vb_migrate_add_bg(widget, VbMigrateBgTypeLeftButton);
+            widget_add_icon_element(widget, 11, 18, &I_AppInteract_32x27);
+            widget_add_icon_element(widget, 48, 18, &I_TextTapApp_56x27);
+            widget_add_icon_element(widget, 105, 40, &I_PulsemonLeftStand_14x16);
             widget_add_button_element(
                 widget,
                 GuiButtonTypeLeft,
@@ -258,14 +250,11 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
             vb_migrate_blink_emulate(inst);
         } else if(state == RegisterStateCaptureFull) {
             widget_reset(widget);
-            widget_add_string_multiline_element(
-                widget,
-                80,
-                31,
-                AlignCenter,
-                AlignCenter,
-                FontPrimary,
-                "Tap Flipper to\nVital Bracelet\nagain");
+            vb_migrate_add_bg(widget, VbMigrateBgTypeLeftButton);
+            widget_add_icon_element(widget, 11, 25, &I_CommVB_32x20);
+            widget_add_icon_element(widget, 23, 18, &I_CommReturn_10x8);
+            widget_add_icon_element(widget, 48, 18, &I_TextRegisterTapAgain_67x20);
+            widget_add_icon_element(widget, 104, 41, &I_PulsemonLeftWait_15x15);
             widget_add_button_element(
                 widget,
                 GuiButtonTypeLeft,
@@ -285,15 +274,10 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
             vb_migrate_blink_read(inst);
         } else if(state == RegisterStateCaptureFailed) {
             widget_reset(widget);
-            widget_add_string_multiline_element(
-                widget,
-                80,
-                31,
-                AlignCenter,
-                AlignCenter,
-                FontSecondary,
-                "Failed to read\nVital Bracelet,\nplease try again");
-            widget_add_icon_element(widget, 15, 22, &I_Error_18x18);
+            vb_migrate_add_bg(widget, VbMigrateBgTypeLeftButton);
+            widget_add_icon_element(widget, 11, 18, &I_WrongDevice_32x27);
+            widget_add_icon_element(widget, 48, 18, &I_TextErrReadFailed_71x20);
+            widget_add_icon_element(widget, 104, 41, &I_PulsemonLeftWait_15x15);
             widget_add_button_element(
                 widget,
                 GuiButtonTypeLeft,
@@ -305,15 +289,10 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
             notification_message(inst->notifications, &sequence_set_red_255);
         } else if(state == RegisterStateCaptureIncorrectTag) {
             widget_reset(widget);
-            widget_add_string_multiline_element(
-                widget,
-                80,
-                31,
-                AlignCenter,
-                AlignCenter,
-                FontSecondary,
-                "Different tag read,\nplease try again");
-            widget_add_icon_element(widget, 15, 22, &I_Error_18x18);
+            vb_migrate_add_bg(widget, VbMigrateBgTypeLeftButton);
+            widget_add_icon_element(widget, 11, 18, &I_WrongDevice_32x27);
+            widget_add_icon_element(widget, 48, 18, &I_TextErrRegisterDifferentTag_47x20);
+            widget_add_icon_element(widget, 104, 41, &I_PulsemonLeftWait_15x15);
             widget_add_button_element(
                 widget,
                 GuiButtonTypeLeft,

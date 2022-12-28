@@ -40,6 +40,8 @@
 #include "scenes/vb_migrate_scene.h"
 #include "vb_tag.h"
 
+#include "vb_migrate_icons.h"
+
 #define VB_MIGRATE_TEMPLATE_NAME "template" NFC_APP_EXTENSION
 #define VB_MIGRATE_CAPTURE_FORMAT "%03d%s"
 
@@ -85,6 +87,12 @@ typedef enum {
     VbMigrateViewVariableItemList,
 } VbMigrateView;
 
+typedef enum {
+    VbMigrateBgTypeNone,
+    VbMigrateBgTypeLeftButton = 1 << 0,
+    VbMigrateBgTypeRightButton = 1 << 1,
+} VbMigrateBgType;
+
 void vb_migrate_blink_read(VbMigrate* inst);
 void vb_migrate_blink_emulate(VbMigrate* inst);
 void vb_migrate_blink_stop(VbMigrate* inst);
@@ -96,3 +104,4 @@ int vb_migrate_count_captured_mons(VbMigrate* inst, const char* dev_name);
 bool vb_migrate_delete(VbMigrate* inst, const char* dev_name, bool whole_vb);
 int vb_migrate_get_next_id(VbMigrate* inst, const char* dev_name, int i, bool is_load);
 void vb_migrate_show_loading_popup(VbMigrate* inst, bool show);
+void vb_migrate_add_bg(Widget* widget, VbMigrateBgType type);

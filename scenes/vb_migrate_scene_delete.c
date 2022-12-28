@@ -30,35 +30,22 @@ static void
 
 void vb_migrate_scene_delete_on_enter(void* context) {
     VbMigrate* inst = context;
-    FuriString* temp_str;
 
     // Perform your setup here
-    BantBlock* bant = vb_tag_get_bant_block(&inst->nfc_dev->dev_data);
-    const VbTagProduct* product = vb_tag_find_product(bant);
-    if(product)
-        temp_str = furi_string_alloc_printf("\e#Delete %s?\e#", product->short_name);
-    else
-        temp_str = furi_string_alloc_set_str("\e#Delete VB?\e#");
+    Widget* widget = inst->widget;
+    vb_migrate_add_bg(widget, VbMigrateBgTypeLeftButton | VbMigrateBgTypeRightButton);
+    widget_add_icon_element(widget, 11, 18, &I_Delete_32x20);
+    widget_add_icon_element(widget, 48, 18, &I_TextDeleteVb_49x13);
 
-    widget_add_text_box_element(
-        inst->widget,
-        0,
-        0,
-        128,
-        23,
-        AlignCenter,
-        AlignCenter,
-        furi_string_get_cstr(temp_str),
-        false);
+    FuriString* temp_str = furi_string_alloc_printf("%d", inst->num_captured);
+    widget_add_string_element(
+        widget, 99, 24, AlignLeft, AlignTop, FontSecondary, furi_string_get_cstr(temp_str));
+    furi_string_free(temp_str);
+
     widget_add_button_element(
         inst->widget, GuiButtonTypeLeft, "Cancel", vb_migrate_scene_delete_widget_callback, inst);
     widget_add_button_element(
         inst->widget, GuiButtonTypeRight, "Delete", vb_migrate_scene_delete_widget_callback, inst);
-
-    furi_string_printf(temp_str, "%s\nCharas. captured: %d", inst->text_store, inst->num_captured);
-    widget_add_string_multiline_element(
-        inst->widget, 64, 24, AlignCenter, AlignTop, FontSecondary, furi_string_get_cstr(temp_str));
-    furi_string_free(temp_str);
 
     view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
 }

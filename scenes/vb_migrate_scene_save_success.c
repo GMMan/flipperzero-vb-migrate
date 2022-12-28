@@ -17,49 +17,49 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "../vb_migrate_i.h"
-#include "vb_migrate_icons.h"
 
-typedef enum {
-    SaveSuccessEventPopup,
-} SaveSuccessEvent;
-
-static void vb_migrate_scene_save_success_popup_callback(void* context) {
+static void vb_migrate_scene_delete_success_widget_callback(
+    GuiButtonType result,
+    InputType type,
+    void* context) {
     VbMigrate* inst = context;
+    if(type == InputTypeShort) {
+        if(result == GuiButtonTypeRight)
 
-    view_dispatcher_send_custom_event(inst->view_dispatcher, SaveSuccessEventPopup);
+            view_dispatcher_send_custom_event(inst->view_dispatcher, 0);
+    }
 }
 
-void vb_migrate_scene_save_success_on_enter(void* context) {
+void vb_migrate_scene_delete_success_on_enter(void* context) {
     VbMigrate* inst = context;
 
-    // Setup view
-    Popup* popup = inst->popup;
-    popup_set_icon(popup, 32, 5, &I_DolphinNice_96x59);
-    popup_set_header(popup, "Saved!", 13, 22, AlignLeft, AlignBottom);
-    popup_set_timeout(popup, 1500);
-    popup_set_context(popup, inst);
-    popup_set_callback(popup, vb_migrate_scene_save_success_popup_callback);
-    popup_enable_timeout(popup);
+    // Perform your setup here
+    Widget* widget = inst->widget;
+    vb_migrate_add_bg(widget, VbMigrateBgTypeRightButton);
+    widget_add_icon_element(widget, 11, 18, &I_Delete_32x20);
+    widget_add_icon_element(widget, 48, 18, &I_TextDeleted_46x6);
+    widget_add_icon_element(widget, 9, 41, &I_PulsemonRightSad_15x15);
+    widget_add_button_element(
+        widget, GuiButtonTypeRight, "OK", vb_migrate_scene_delete_success_widget_callback, inst);
 
-    view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewPopup);
+    view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
 }
 
-bool vb_migrate_scene_save_success_on_event(void* context, SceneManagerEvent event) {
+bool vb_migrate_scene_delete_success_on_event(void* context, SceneManagerEvent event) {
     VbMigrate* inst = context;
     bool consumed = false;
 
-    if(event.type == SceneManagerEventTypeCustom) {
-        if(event.event == SaveSuccessEventPopup) {
-            scene_manager_next_scene(inst->scene_manager, VbMigrateSceneInfo);
-            consumed = true;
-        }
+    if(event.type == SceneManagerEventTypeCustom || event.type == SceneManagerEventTypeBack) {
+        uint32_t back_scenes[] = {VbMigrateSceneSelect, VbMigrateSceneMainMenu};
+        consumed = scene_manager_search_and_switch_to_previous_scene_one_of(
+            inst->scene_manager, back_scenes, COUNT_OF(back_scenes));
     }
     return consumed;
 }
 
-void vb_migrate_scene_save_success_on_exit(void* context) {
+void vb_migrate_scene_delete_success_on_exit(void* context) {
     VbMigrate* inst = context;
 
-    // Clear view
-    popup_reset(inst->popup);
+    // Perform your cleanup here
+    widget_reset(inst->widget);
 }

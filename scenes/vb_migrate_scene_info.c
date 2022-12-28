@@ -47,7 +47,9 @@ void vb_migrate_scene_info_on_enter(void* context) {
     // Number of mons loaded
     furi_string_cat_printf(temp_str, "Charas. captured: %d", inst->num_captured);
 
-    widget_add_text_scroll_element(inst->widget, 0, 0, 128, 52, furi_string_get_cstr(temp_str));
+    vb_migrate_add_bg(inst->widget, VbMigrateBgTypeRightButton);
+
+    widget_add_text_scroll_element(inst->widget, 8, 16, 113, 33, furi_string_get_cstr(temp_str));
     furi_string_free(temp_str);
 
     widget_add_button_element(
