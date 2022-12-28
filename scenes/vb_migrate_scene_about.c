@@ -26,6 +26,7 @@ void vb_migrate_scene_about_on_enter(void* context) {
         "\e#Information\n"
         "Version: %s\n"
         "Developed by: cyanic\n"
+        "Graphics by: Aderek\n"
         "GitHub: https://github.com/GMMan/flipperzero-vb-migrate\n"
         "\n"
         "\e#Description\n"

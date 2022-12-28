@@ -163,3 +163,8 @@ details, and press the right key to confirm deletion.
 If you want to unregister the Vital Bracelet, you can use this option to delete
 its captures and remove it from the "Select Vital Bracelet" list. Check the
 details, and press the right key to confirm deletion.
+
+Credits
+-------
+
+Graphics by [Aderek](https://twitter.com/AderekArt)
