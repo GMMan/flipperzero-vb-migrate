@@ -23,6 +23,14 @@ or wasting time loading data that will never be used.
 Usage
 -----
 
+### Update notes
+
+As of Flipper Zero firmware version 0.79.1, application data is stored in a
+dedicated folder. As of app version 1.1, application data is stored in
+`app_data/vb_migrate` under the SD card. If you have used a previous version of
+this app, please move the `vb_migrate` folder on your card into the `app_data`
+folder to resume access to previously registered VBs.
+
 ### 1. Register Vital Bracelet
 
 Registering your Vital Bracelet to the Flipper creates template data used for

@@ -20,9 +20,9 @@
 
 #include <storage/storage.h>
 
-#define VB_MIGRATE_VERSION "1.0"
+#define VB_MIGRATE_VERSION "1.1"
 
-#define VB_MIGRATE_FOLDER ANY_PATH("vb_migrate")
+#define VB_MIGRATE_FOLDER STORAGE_APP_DATA_PATH_PREFIX
 
 typedef struct VbMigrate VbMigrate;
 
