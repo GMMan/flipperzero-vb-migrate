@@ -1,4 +1,4 @@
-#include "nfca.h"
+#include <lib/nfc/protocols/nfca.h>
 #include <string.h>
 #include <stdio.h>
 #include <furi.h>

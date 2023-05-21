@@ -1,6 +1,6 @@
 #include <limits.h>
 #include <lib/nfc/protocols/mifare_ultralight.h>
-#include "nfc_util.h"
+#include <lib/nfc/protocols/nfc_util.h>
 #include <furi.h>
 #include <furi_hal_nfc.h>
 

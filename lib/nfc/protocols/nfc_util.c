@@ -1,4 +1,4 @@
-#include "nfc_util.h"
+#include <lib/nfc/protocols/nfc_util.h>
 
 #include <furi.h>
 
