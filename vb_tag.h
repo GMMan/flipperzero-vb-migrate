@@ -47,6 +47,7 @@ typedef enum {
     VbTagStatusReady = 1 << 0,
     VbTagStatusDimReady = 1 << 1,
     VbTagStatusActiveIsAvatar = 1 << 2,
+    VbTagStatusNewSpot = 1 << 3,
 } VbTagStatus;
 
 typedef enum {
