@@ -148,7 +148,7 @@ bool mf_ultralight_authenticate(FuriHalNfcTxRxContext* tx_rx, uint32_t key, uint
 
     do {
         FURI_LOG_D(TAG, "Authenticating");
-        tx_rx->tx_data[0] = MF_UL_AUTH;
+        tx_rx->tx_data[0] = MF_UL_PWD_AUTH;
         nfc_util_num2bytes(key, 4, &tx_rx->tx_data[1]);
         tx_rx->tx_bits = 40;
         tx_rx->tx_rx_type = FuriHalNfcTxRxTypeDefault;
@@ -1705,7 +1705,7 @@ bool mf_ul_prepare_emulation_response(
                     }
                 }
             }
-        } else if(cmd == MF_UL_AUTH) {
+        } else if(cmd == MF_UL_PWD_AUTH) {
             if(emulator->supported_features & MfUltralightSupportAuth) {
                 if(buff_rx_len == (1 + 4) * 8) {
                     // Record password sent by PCD
