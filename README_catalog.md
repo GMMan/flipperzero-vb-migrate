@@ -1,13 +1,11 @@
-VB Lab Migration Assistant for Flipper Zero
-===========================================
+# VB Lab Migration Assistant for Flipper Zero
 
 This app is designed to make transferring your characters from VB Lab and VBC
 Lab more convenient.
 
 Send me a Ko-fi if you found this useful: https://ko-fi.com/C0C81P4PX
 
-Background
-----------
+## Background
 The Vital Bracelet Arena app is going to be the new companion app for the Vital
 Bracelet series of fitness bracelet toys, however the app does not support
 account linking from VB Lab and VBC Lab, and requires you to transfer characters
@@ -20,10 +18,8 @@ on the Flipper and to bypass the Dim loading process, therefore allowing you to
 transfer your characters without having to flip back and forth between the apps
 or wasting time loading data that will never be used.
 
-Usage
------
+## Usage
 See README.md in source repository: https://github.com/GMMan/flipperzero-vb-migrate/blob/master/README.md
 
-Credits
--------
+## Credits
 Graphics by Aderek: https://twitter.com/AderekArt
