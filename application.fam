@@ -23,7 +23,7 @@ App(
     entry_point="vb_migrate_app",
     requires=["gui", "dialogs", "notification", "storage"],
     stack_size=2 * 1024,
-    fap_version=(1,1),
+    fap_version=(1,2),
     fap_libs=[],
     fap_icon="vb_migrate_10px.png",
     fap_category="Tools",
