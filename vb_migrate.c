@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // VB Lab Migration Assistant for Flipper Zero
-// Copyright (C) 2022  cyanic
+// Copyright (C) 2022-2024  cyanic
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -70,7 +70,6 @@ bool vb_migrate_save_nfc(VbMigrate* inst, const char* dev_name, const char* file
             break;
         }
         furi_string_cat_printf(temp_str, "/%s", file_name);
-        inst->nfc_dev->format = NfcDeviceSaveFormatMifareUl;
         saved = nfc_device_save(inst->nfc_dev, furi_string_get_cstr(temp_str));
     } while(false);
 
@@ -79,13 +78,13 @@ bool vb_migrate_save_nfc(VbMigrate* inst, const char* dev_name, const char* file
 }
 
 bool vb_migrate_load_nfc(VbMigrate* inst, const char* dev_name, const char* file_name) {
-    bool saved = false;
+    bool loaded = false;
     FuriString* temp_str =
         furi_string_alloc_printf("%s/%s/%s", VB_MIGRATE_FOLDER, dev_name, file_name);
-    saved = nfc_device_load(inst->nfc_dev, furi_string_get_cstr(temp_str), true);
+    loaded = nfc_device_load(inst->nfc_dev, furi_string_get_cstr(temp_str));
 
     furi_string_free(temp_str);
-    return saved;
+    return loaded;
 }
 
 bool vb_migrate_delete(VbMigrate* inst, const char* dev_name, bool whole_vb) {
@@ -102,8 +101,7 @@ bool vb_migrate_delete(VbMigrate* inst, const char* dev_name, bool whole_vb) {
             FuriString* file_path = furi_string_alloc();
             while(storage_dir_read(dir_handle, &file_info, name, sizeof(name))) {
                 // Files that is .nfc, but is not template
-                if(!(file_info.flags & FSF_DIRECTORY) &&
-                   strstr(name, NFC_APP_FILENAME_EXTENSION) &&
+                if(!(file_info.flags & FSF_DIRECTORY) && strstr(name, NFC_APP_EXTENSION) &&
                    !strstr(name, VB_MIGRATE_TEMPLATE_NAME)) {
                     furi_string_printf(file_path, "%s/%s", furi_string_get_cstr(dir_path), name);
                     deleted =
@@ -132,7 +130,7 @@ int vb_migrate_count_captured_mons(VbMigrate* inst, const char* dev_name) {
         char name[256];
         while(storage_dir_read(dir_handle, &file_info, name, sizeof(name))) {
             // Files that is .nfc, but is not template
-            if(!(file_info.flags & FSF_DIRECTORY) && strstr(name, NFC_APP_FILENAME_EXTENSION) &&
+            if(!(file_info.flags & FSF_DIRECTORY) && strstr(name, NFC_APP_EXTENSION) &&
                !strstr(name, VB_MIGRATE_TEMPLATE_NAME))
                 ++count;
         }
@@ -154,7 +152,7 @@ int vb_migrate_get_next_id(VbMigrate* inst, const char* dev_name, int i, bool is
             "%s/" VB_MIGRATE_CAPTURE_FORMAT,
             furi_string_get_cstr(dir_path),
             i,
-            NFC_APP_FILENAME_EXTENSION);
+            NFC_APP_EXTENSION);
         bool exit_cond =
             storage_common_stat(inst->storage, furi_string_get_cstr(file_path), NULL) ==
             FSE_NOT_EXIST;
@@ -169,15 +167,13 @@ int vb_migrate_get_next_id(VbMigrate* inst, const char* dev_name, int i, bool is
 }
 
 void vb_migrate_show_loading_popup(VbMigrate* inst, bool show) {
-    TaskHandle_t timer_task = xTaskGetHandle(configTIMER_SERVICE_TASK_NAME);
-
     if(show) {
         // Raise timer priority so that animations can play
-        vTaskPrioritySet(timer_task, configMAX_PRIORITIES - 1);
+        furi_timer_set_thread_priority(FuriTimerThreadPriorityElevated);
         view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewLoading);
     } else {
         // Restore default timer priority
-        vTaskPrioritySet(timer_task, configTIMER_TASK_PRIORITY);
+        furi_timer_set_thread_priority(FuriTimerThreadPriorityNormal);
     }
 }
 
@@ -208,8 +204,9 @@ VbMigrate* vb_migrate_alloc() {
     inst->dialogs = furi_record_open(RECORD_DIALOGS);
 
     // NFC
+    inst->nfc = nfc_alloc();
     inst->nfc_dev = nfc_device_alloc();
-    inst->worker = nfc_worker_alloc();
+    inst->data_work = mf_ultralight_alloc();
 
     // Submenu
     inst->submenu = submenu_alloc();
@@ -290,8 +287,9 @@ void vb_migrate_free(VbMigrate* inst) {
     submenu_free(inst->submenu);
 
     // NFC
-    nfc_worker_free(inst->worker);
+    mf_ultralight_free(inst->data_work);
     nfc_device_free(inst->nfc_dev);
+    nfc_free(inst->nfc);
 
     furi_record_close(RECORD_DIALOGS);
     furi_record_close(RECORD_NOTIFICATION);
