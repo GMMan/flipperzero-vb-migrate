@@ -66,6 +66,7 @@ static NfcCommand
         nfc_device_set_data(
             inst->nfc_dev, NfcProtocolMfUltralight, nfc_poller_get_data(inst->poller));
         view_dispatcher_send_custom_event(inst->view_dispatcher, RegisterEventTypeVbReadInitial);
+        result = NfcCommandStop;
     }
 
     return result;
@@ -84,6 +85,7 @@ static NfcCommand
             mf_ultralight_event->data->password.data,
             sizeof(inst->captured_pwd));
         view_dispatcher_send_custom_event(inst->view_dispatcher, RegisterEventTypeVbPwdAuth);
+        result = NfcCommandStop;
     }
 
     return result;
@@ -96,6 +98,7 @@ static NfcCommand
     NfcCommand result = NfcCommandContinue;
 
     if(mf_ultralight_event->type == MfUltralightPollerEventTypeAuthRequest) {
+        mf_ultralight_event->data->auth_context.skip_auth = false;
         memcpy(
             mf_ultralight_event->data->auth_context.password.data,
             inst->captured_pwd,
@@ -105,10 +108,10 @@ static NfcCommand
             inst->nfc_dev, NfcProtocolMfUltralight, nfc_poller_get_data(inst->poller));
         view_dispatcher_send_custom_event(
             inst->view_dispatcher, RegisterEventTypeVbReadFullSuccess);
-    } else if(
-        mf_ultralight_event->type == MfUltralightPollerEventTypeAuthFailed ||
-        mf_ultralight_event->type == MfUltralightPollerEventTypeReadFailed) {
+        result = NfcCommandStop;
+    } else if(mf_ultralight_event->type == MfUltralightPollerEventTypeAuthFailed) {
         view_dispatcher_send_custom_event(inst->view_dispatcher, RegisterEventTypeVbReadFullFail);
+        result = NfcCommandStop;
     }
 
     return result;
@@ -275,6 +278,7 @@ static void vb_migrate_scene_register_set_state(VbMigrate* inst, RegisterState s
 
             view_dispatcher_switch_to_view(inst->view_dispatcher, VbMigrateViewWidget);
 
+            // TODO: run detect before starting poller (need a worker thread)?
             inst->poller = nfc_poller_alloc(inst->nfc, NfcProtocolMfUltralight);
             nfc_poller_start(
                 inst->poller, vb_migrate_scene_register_worker_full_capture_callback, inst);
