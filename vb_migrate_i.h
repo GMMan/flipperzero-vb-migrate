@@ -72,7 +72,7 @@ struct VbMigrate {
     NfcDevice* nfc_dev;
     MfUltralightData* data_work;
     char text_store[128];
-    uint8_t captured_pwd[4];
+    uint8_t captured_pwd[MF_ULTRALIGHT_AUTH_PASSWORD_SIZE];
     uint8_t captured_uid[7];
     bool clear_account_id;
     int num_captured;
